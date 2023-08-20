@@ -74,4 +74,12 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    //ARcore用に追記
+    implementation("com.google.ar:core:1.39.0")
+    implementation("de.javagl:obj:0.2.1")
+    implementation("com.github.bumptech.glide:glide:4.6.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.6.1")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("io.coil-kt:coil-compose:2.1.0")
 }
