@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.arcore_clipping;
+package com.example.myapplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -33,13 +33,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.example.arcore_clipping.helpers.CameraPermissionHelper;
-import com.example.arcore_clipping.helpers.DisplayRotationHelper;
-import com.example.arcore_clipping.helpers.FullScreenHelper;
-import com.example.arcore_clipping.helpers.SnackbarHelper;
-import com.example.arcore_clipping.helpers.TrackingStateHelper;
-import com.example.arcore_clipping.rendering.AugmentedImageRenderer;
-import com.example.arcore_clipping.rendering.BackgroundRenderer;
+import com.example.myapplication.ARcore.helpers.CameraPermissionHelper;
+import com.example.myapplication.ARcore.helpers.DisplayRotationHelper;
+import com.example.myapplication.ARcore.helpers.FullScreenHelper;
+import com.example.myapplication.ARcore.helpers.SnackbarHelper;
+import com.example.myapplication.ARcore.helpers.TrackingStateHelper;
+import com.example.myapplication.ARcore.rendering.AugmentedImageRenderer;
+import com.example.myapplication.ARcore.rendering.BackgroundRenderer;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.AugmentedImage;
@@ -104,8 +104,8 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_arstart);
-    surfaceView = findViewById(R.id.surfaceview);
+    setContentView(R.layout.activity_augmentedimage);
+    surfaceView = findViewById(R.id.surfaceView);
     displayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
 
     // Set up renderer.
@@ -119,8 +119,8 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
     fitToScanView = findViewById(R.id.image_view_fit_to_scan);
     glideRequestManager = Glide.with(this);
     glideRequestManager
-        .load(Uri.parse("file:///android_asset/fit_to_scan.png"))
-        .into(fitToScanView);
+            .load(Uri.parse("file:///android_asset/fit_to_scan.png"))
+            .into(fitToScanView);
 
     installRequested = false;
 
@@ -173,7 +173,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
 
         session = new Session(/* context = */ this);
       } catch (UnavailableArcoreNotInstalledException
-          | UnavailableUserDeclinedInstallationException e) {
+               | UnavailableUserDeclinedInstallationException e) {
         message = "Please install ARCore";
         exception = e;
       } catch (UnavailableApkTooOldException e) {
@@ -233,8 +233,8 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
     super.onRequestPermissionsResult(requestCode, permissions, results);
     if (!CameraPermissionHelper.hasCameraPermission(this)) {
       Toast.makeText(
-              this, "Camera permissions are needed to run this application", Toast.LENGTH_LONG)
-          .show();
+                      this, "Camera permissions are needed to run this application", Toast.LENGTH_LONG)
+              .show();
       if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
         // Permission denied with checking "Do not ask again".
         CameraPermissionHelper.launchPermissionSettings(this);
@@ -326,9 +326,9 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
   }
 
   private void drawAugmentedImages(
-      Frame frame, float[] projmtx, float[] viewmtx, float[] colorCorrectionRgba) throws IOException {
+          Frame frame, float[] projmtx, float[] viewmtx, float[] colorCorrectionRgba) throws IOException {
     Collection<AugmentedImage> updatedAugmentedImages =
-        frame.getUpdatedTrackables(AugmentedImage.class);
+            frame.getUpdatedTrackables(AugmentedImage.class);
 
     // Iterate to update augmentedImageMap, remove elements we cannot draw.
     for (AugmentedImage augmentedImage : updatedAugmentedImages) {
@@ -343,18 +343,18 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
         case TRACKING:
           // Have to switch to UI Thread to update View.
           this.runOnUiThread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  fitToScanView.setVisibility(View.GONE);
-                }
-              });
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      fitToScanView.setVisibility(View.GONE);
+                    }
+                  });
 
           // Create a new anchor for newly found images.
           if (!augmentedImageMap.containsKey(augmentedImage.getIndex())) {
             Anchor centerPoseAnchor = augmentedImage.createAnchor(augmentedImage.getCenterPose());
             augmentedImageMap.put(
-                augmentedImage.getIndex(), Pair.create(augmentedImage, centerPoseAnchor));
+                    augmentedImage.getIndex(), Pair.create(augmentedImage, centerPoseAnchor));
           }
           break;
 
@@ -375,7 +375,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
       switch (augmentedImage.getTrackingState()) {
         case TRACKING:
           augmentedImageRenderer.draw(
-              viewmtx, projmtx, augmentedImage, centerAnchor, colorCorrectionRgba);
+                  viewmtx, projmtx, augmentedImage, centerAnchor, colorCorrectionRgba);
           break;
         default:
           break;
