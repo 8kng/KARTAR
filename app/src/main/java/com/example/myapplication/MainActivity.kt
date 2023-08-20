@@ -22,8 +22,8 @@ class MainActivity : AppCompatActivity() {
         Log.d(ContentValues.TAG, "onStart()")
 
         binding.ARStartButton.setOnClickListener{
-            //val intent = Intent(applicationContext, AugmentedImageActivity::class.java)
-            //startActivity(intent)
+            val intent = Intent(applicationContext, AugmentedImageActivity::class.java)
+            startActivity(intent)
         }
         binding.imageSaveButton.setOnClickListener{
             val intent = Intent(applicationContext, SecondActivity::class.java)
