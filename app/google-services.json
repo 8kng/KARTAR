@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "96357517333",
+    "project_id": "kartar-test",
+    "storage_bucket": "kartar-test.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:96357517333:android:954cb38c63928ce90ee61c",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "96357517333-k3bq0c1fj37cdoul7otll0pupv4625l2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdUVe3wU2j2JdSrZV9eW3bFY5JImeLfeE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "96357517333-k3bq0c1fj37cdoul7otll0pupv4625l2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
