@@ -86,6 +86,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.1.0")
     //URLから画像を保存する用に追記
     implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("com.github.bumptech.glide:glide:4.11.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.11.0")
     //firebase用に追記
     implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
     implementation("com.google.firebase:firebase-analytics-ktx")

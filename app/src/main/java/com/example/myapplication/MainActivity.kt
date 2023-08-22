@@ -26,9 +26,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         binding.imageSaveButton.setOnClickListener{
-            val intent = Intent(applicationContext, SecondActivity::class.java)
+            val intent = Intent(applicationContext, ImageSaveActivity::class.java)
             startActivity(intent)
-            Toast.makeText(this, "yeah", Toast.LENGTH_SHORT).show()
         }
     }
 }
