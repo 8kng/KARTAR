@@ -82,4 +82,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
     implementation("io.coil-kt:coil-compose:2.1.0")
+    //URLから画像を保存する用に追記
+    implementation("com.github.bumptech.glide:glide:4.11.0")
+    implementation("com.github.bumptech.glide:compiler:4.11.0")
 }
