@@ -16,6 +16,7 @@
 package com.example.myapplication.ARcore.rendering;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.AugmentedImage;
@@ -39,6 +40,7 @@ public class AugmentedImageRenderer {
 
   public void createOnGlThread(Context context, String textureName) throws IOException {
 
+    Log.d("texture", textureName);
     imageFrameUpperRight.createOnGlThread(
             context,
             "models/andy_shadow2.obj",
@@ -70,15 +72,6 @@ public class AugmentedImageRenderer {
     //必要
     Pose anchorPose = centerAnchor.getPose();
     float[] modelMatrix = new float[16];
-
-    //実験
-    /*
-    anchorPose.compose(mazeModelLocalOffset).toMatrix(modelMatrix, 0);
-    mazeRenderer.updateModelMatrix(modelMatrix, mazeScaleFactor, mazeScaleFactor/10.0f, mazeScaleFactor);
-    mazeRenderer.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
-     */
-
-
 
     Pose[] localBoundaryPoses = {
       Pose.makeTranslation(

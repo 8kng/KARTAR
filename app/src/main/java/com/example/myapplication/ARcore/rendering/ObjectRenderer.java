@@ -21,7 +21,10 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -140,9 +143,16 @@ public class ObjectRenderer {
     // Compiles and loads the shader based on the current configuration.
     compileAndLoadShaderProgram(context);
 
+    File imgFile = new File(diffuseTextureAssetName);
+    if (imgFile.exists()) {
+      Log.d("ファイル", "存在する!!!");
+    } else  {
+      Log.d("ファイル", "存在しない!!!");
+    }
+    FileInputStream fis = new FileInputStream(imgFile);
+    Bitmap texBitmap = BitmapFactory.decodeStream(fis);
     // Read the texture.
-    Bitmap textureBitmap =
-        BitmapFactory.decodeStream(context.getAssets().open(diffuseTextureAssetName));
+    //Bitmap textureBitmap = BitmapFactory.decodeStream(context.getAssets().open(diffuseTextureAssetName));
 
     GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
     GLES20.glGenTextures(textures.length, textures, 0);
@@ -151,11 +161,12 @@ public class ObjectRenderer {
     GLES20.glTexParameteri(
         GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
     GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, textureBitmap, 0);
+    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, texBitmap, 0);
     GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
 
-    textureBitmap.recycle();
+    texBitmap.recycle();
+    //textureBitmap.recycle();
 
     ShaderUtil.checkGLError(TAG, "Texture loading");
 
