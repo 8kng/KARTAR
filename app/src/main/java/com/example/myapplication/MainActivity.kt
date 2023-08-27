@@ -2,11 +2,11 @@ package com.example.myapplication
 
 import android.content.ContentValues
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
+import com.example.myapplication.view.screen.Auth.NotLoggedInActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -26,7 +26,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         binding.imageSaveButton.setOnClickListener{
-            val intent = Intent(applicationContext, ImageSaveActivity::class.java)
+            //val intent = Intent(applicationContext, ImageSaveActivity::class.java)
+            val intent = Intent(applicationContext, NotLoggedInActivity::class.java)
             startActivity(intent)
         }
     }

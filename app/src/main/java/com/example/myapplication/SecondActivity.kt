@@ -83,7 +83,7 @@ fun EFUDAButton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ButtonContent(modifier: Modifier = Modifier, text: String) {
+fun ButtonContent(modifier: Modifier = Modifier, text: String, fontSize: Int = 40) {
     Box(
         modifier
             .border(
@@ -98,7 +98,7 @@ fun ButtonContent(modifier: Modifier = Modifier, text: String) {
         Text(
             text = text,
             color = Color(65, 65, 65),
-            fontSize = 40.sp,
+            fontSize = fontSize.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 50.sp,

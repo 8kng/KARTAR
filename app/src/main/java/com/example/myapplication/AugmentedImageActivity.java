@@ -406,7 +406,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
         Log.d("ファイル", "存在しない");
       }
 
-      augmentedImageDatabase.addImage("models/droidkun.png", loadAugmentedImageBitmap("default.jpg"));
+      //augmentedImageDatabase.addImage("models/droidkun.png", loadAugmentedImageBitmap("default.jpg"));
 
     }
 
