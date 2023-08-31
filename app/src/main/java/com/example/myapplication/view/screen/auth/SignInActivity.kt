@@ -1,4 +1,4 @@
-package com.example.myapplication.view.screen.Auth
+package com.example.myapplication.view.screen.auth
 
 import android.app.Activity
 import android.os.Bundle
@@ -49,10 +49,7 @@ import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.Yellow
 import com.example.myapplication.theme.Yellow2
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +59,7 @@ class SignInActivity : ComponentActivity() {
         setContent{
             SignInScreen(authViewModel)
             if (authViewModel.allowShowDialog.value) {
-                checkAlertDialog(authViewModel = authViewModel)
+                CheckAlertDialog(authViewModel = authViewModel)
             }
         }
     }
@@ -203,16 +200,11 @@ fun PasswordTextField(authViewModel: AuthViewModel = AuthViewModel()) {
 fun CompleteButton(modifier: Modifier = Modifier, authViewModel: AuthViewModel = AuthViewModel()) {
     Surface(
         modifier = modifier.shadow(10.dp),
-        onClick = {
-            authViewModel.signInButtonClick()
-        }
+        onClick = { authViewModel.signInButtonClick() }
     ) {
         Box(
             modifier
-                .border(
-                    width = 4.dp,
-                    color = LiteGreen
-                )
+                .border(width = 4.dp, color = LiteGreen)
                 .height(46.dp)
                 .background(Yellow)
                 .width(260.dp),
@@ -229,7 +221,7 @@ fun CompleteButton(modifier: Modifier = Modifier, authViewModel: AuthViewModel =
 }
 
 @Composable
-fun checkAlertDialog(authViewModel: AuthViewModel) {
+fun CheckAlertDialog(authViewModel: AuthViewModel) {
     val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { authViewModel.allowShowDialog.value = false },
@@ -256,6 +248,9 @@ fun checkAlertDialog(authViewModel: AuthViewModel) {
                                 if (task.isSuccessful) {
                                     authViewModel.allowShowDialog.value = false
                                     Toast.makeText(context, "登録が完了しました!", Toast.LENGTH_SHORT).show()
+                                } else if (task.exception?.message.toString() == "The email address is already in use by another account.") {
+                                    authViewModel.allowShowDialog.value = false
+                                    Toast.makeText(context, "既に登録されています...", Toast.LENGTH_SHORT).show()
                                 } else {
                                     authViewModel.allowShowDialog.value = false
                                     Toast.makeText(context, "登録が失敗しました...", Toast.LENGTH_SHORT).show()

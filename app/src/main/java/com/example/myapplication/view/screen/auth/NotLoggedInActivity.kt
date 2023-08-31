@@ -1,4 +1,4 @@
-package com.example.myapplication.view.screen.Auth
+package com.example.myapplication.view.screen.auth
 
 import android.content.Intent
 import android.os.Bundle
