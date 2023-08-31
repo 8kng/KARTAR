@@ -1,12 +1,11 @@
 package com.example.myapplication
 
-import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.view.screen.Auth.NotLoggedInActivity
+import com.google.firebase.FirebaseApp
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -15,11 +14,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        //Firebaseの初期化
+        FirebaseApp.initializeApp(this)
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d(ContentValues.TAG, "onStart()")
 
         binding.ARStartButton.setOnClickListener{
             val intent = Intent(applicationContext, AugmentedImageActivity::class.java)

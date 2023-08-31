@@ -30,6 +30,7 @@
         <activity android:name=".AugmentedImageActivity"/>
         <activity android:name=".ImageSaveActivity"/>
         <activity android:name=".view.screen.Auth.NotLoggedInActivity"/>
+        <activity android:name=".view.screen.Auth.SignInActivity"/>
         <meta-data android:name="com.google.ar.core" android:value="required" />
     </application>
 

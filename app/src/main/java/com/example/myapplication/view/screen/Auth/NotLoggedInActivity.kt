@@ -1,5 +1,6 @@
 package com.example.myapplication.view.screen.Auth
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,17 +23,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import com.example.myapplication.R
+import com.example.myapplication.theme.DarkGreen
+import com.example.myapplication.theme.LiteGreen
 
 class NotLoggedInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent{
+            WindowCompat.setDecorFitsSystemWindows(window, false)
             AuthLoginScreen()
         }
     }
@@ -70,17 +76,19 @@ fun AuthLoginScreenPreview() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInButton(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     Surface(
         modifier = modifier.shadow(10.dp),
         onClick = {
-            /*TODO:クリック時にサインイン画面へ移動する*/
+            val intent = Intent(context, SignInActivity::class.java)
+            context.startActivity(intent)
         }
     ) {
         Box(
             modifier
                 .border(
                     width = 4.dp,
-                    color = Color(124, 194, 142, 255)
+                    color = LiteGreen
                 )
                 .height(46.dp)
                 .background(Color(255, 230, 153, 255))
@@ -90,7 +98,7 @@ fun SignInButton(modifier: Modifier = Modifier) {
             Text(
                 text = "サインイン",
                 modifier = Modifier,
-                color = Color(84, 130, 95, 255),
+                color = DarkGreen,
                 fontSize = 16.sp,
             )
         }
@@ -107,7 +115,7 @@ fun LogInTextButton() {
         Text(
             text = "ログインはこちらから",
             modifier = Modifier,
-            color = Color(84, 130, 95, 255),
+            color = DarkGreen,
             fontSize = 16.sp,
         )
     }
