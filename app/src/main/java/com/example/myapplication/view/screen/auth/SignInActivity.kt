@@ -95,7 +95,7 @@ fun SignInScreen(authViewModel: AuthViewModel = AuthViewModel()) {
                 )
             }
             Spacer(modifier = Modifier.height(230.dp))
-            CompleteButton(Modifier, authViewModel)
+            CompleteButton(Modifier) { authViewModel.signInButtonClick() }
         }
     }
 }
@@ -152,7 +152,7 @@ fun PasswordTextField(authViewModel: AuthViewModel = AuthViewModel()) {
         onValueChange = { newValue ->
             val isAlphaNumeric = newValue.all { it.isLetterOrDigit() }
             val isBackspacePressed = newValue.length < authViewModel.password.value.length
-            if (isAlphaNumeric && authViewModel.password.value.length <= 12 || isBackspacePressed) {
+            if (isAlphaNumeric && newValue.length <= 12 || isBackspacePressed) {
                 authViewModel.onPasswordChanged(newValue)
             }
         },
@@ -197,10 +197,10 @@ fun PasswordTextField(authViewModel: AuthViewModel = AuthViewModel()) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CompleteButton(modifier: Modifier = Modifier, authViewModel: AuthViewModel = AuthViewModel()) {
+fun CompleteButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
         modifier = modifier.shadow(10.dp),
-        onClick = { authViewModel.signInButtonClick() }
+        onClick = { onClick() }
     ) {
         Box(
             modifier
@@ -241,25 +241,7 @@ fun CheckAlertDialog(authViewModel: AuthViewModel) {
                 Text(text = "NO", color = Grey2, fontSize = 16.sp)
             }
             TextButton(
-                onClick = {
-                    try {
-                        FirebaseAuth.getInstance().createUserWithEmailAndPassword(authViewModel.email.value, authViewModel.password.value)
-                            .addOnCompleteListener(context as Activity) { task ->
-                                if (task.isSuccessful) {
-                                    authViewModel.allowShowDialog.value = false
-                                    Toast.makeText(context, "登録が完了しました!", Toast.LENGTH_SHORT).show()
-                                } else if (task.exception?.message.toString() == "The email address is already in use by another account.") {
-                                    authViewModel.allowShowDialog.value = false
-                                    Toast.makeText(context, "既に登録されています...", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    authViewModel.allowShowDialog.value = false
-                                    Toast.makeText(context, "登録が失敗しました...", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                    } catch (e: Exception) {
-                        Log.d("登録失敗", e.message.toString())
-                    }
-                }
+                onClick = { authViewModel.signInUser(context as Activity)}
             ) {
                 Text(text = "OK", color = DarkGreen, fontSize = 16.sp)
             }

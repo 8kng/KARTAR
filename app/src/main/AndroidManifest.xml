@@ -31,6 +31,7 @@
         <activity android:name=".ImageSaveActivity"/>
         <activity android:name=".view.screen.auth.NotLoggedInActivity"/>
         <activity android:name=".view.screen.auth.SignInActivity"/>
+        <activity android:name=".view.screen.auth.ProfileSetupActivity"/>
         <meta-data android:name="com.google.ar.core" android:value="required" />
     </application>
 

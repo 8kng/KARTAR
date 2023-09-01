@@ -1,10 +1,12 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.view.screen.auth.NotLoggedInActivity
+import com.example.myapplication.view.screen.auth.ProfileSetupActivity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 
@@ -25,8 +27,14 @@ class MainActivity : AppCompatActivity() {
 
         val auth = FirebaseAuth.getInstance()
         val user = auth.currentUser
+        val sharedPref = getSharedPreferences("UserInformation", Context.MODE_PRIVATE)
+        val userName = sharedPref.getString("UserName", "")
 
         if (user != null) {
+            if (userName == "") {
+                val intent = Intent(applicationContext, ProfileSetupActivity::class.java)
+                startActivity(intent)
+            }
             //TODO:ログイン時に飛ぶ画面を設定
         } else {
             val intent = Intent(applicationContext, NotLoggedInActivity::class.java)
