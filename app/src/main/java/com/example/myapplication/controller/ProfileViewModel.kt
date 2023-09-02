@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.HomeActivity
 import com.example.myapplication.ImageSaveActivity
 import com.example.myapplication.R
 import com.example.myapplication.theme.LiteGreen
@@ -68,7 +69,7 @@ class ProfileViewModel : ViewModel(){
                                 editor.putString(context.getString(R.string.imageIcon), imageUri.value.toString())
                                 editor.apply()
                                 showProcessIndicator.value = false
-                                val intent = Intent(context, ImageSaveActivity::class.java)
+                                val intent = Intent(context, HomeActivity::class.java)
                                 context.startActivity(intent)
                             }
                         }.addOnFailureListener {

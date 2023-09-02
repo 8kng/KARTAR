@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.HomeActivity
 import com.example.myapplication.ImageSaveActivity
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
@@ -110,7 +111,8 @@ class AuthViewModel: ViewModel() {
                                             editor.apply()
                                             Toast.makeText(context, "ログインが完了しました!", Toast.LENGTH_SHORT).show()
                                             showProcessIndicator.value = false
-                                            val intent = Intent(context, ImageSaveActivity::class.java)
+                                            //HomeActivityに移動
+                                            val intent = Intent(context, HomeActivity::class.java)
                                             context.startActivity(intent)
                                             context.finish()
                                         }

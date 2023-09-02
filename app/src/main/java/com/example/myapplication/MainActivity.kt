@@ -32,11 +32,11 @@ class MainActivity : AppCompatActivity() {
         val userName = sharedPref.getString("UserName", "")
 
         if (user != null) {
-            if (userName == "") {
+            if (userName == "") {  //ユーザ情報が未定の場合
                 val intent = Intent(applicationContext, ProfileSetupActivity::class.java)
                 startActivity(intent)
-            } else {
-                val intent = Intent(applicationContext, LoginActivity::class.java)
+            } else {  //ログイン・ユーザ情報が保存されている場合
+                val intent = Intent(applicationContext, HomeActivity::class.java)
                 startActivity(intent)
             }
         } else {
