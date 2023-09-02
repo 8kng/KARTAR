@@ -1,4 +1,4 @@
-package com.example.myapplication.view.screen.auth
+package com.example.myapplication.view.screen.profile
 
 import android.net.Uri
 import android.os.Bundle
@@ -45,6 +45,7 @@ import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.Yellow2
+import com.example.myapplication.view.widget.button.OnValidCheckButton
 
 class ProfileSetupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,7 +79,7 @@ fun ProfileSetupActivityScreen(profileViewModel: ProfileViewModel) {
                 Spacer(modifier = Modifier.height(20.dp))
                 UserNameTextField(profileViewModel = profileViewModel)
                 Spacer(modifier = Modifier.height(140.dp))
-                CompleteButton { profileViewModel.onValidCheck(context) }
+                OnValidCheckButton { profileViewModel.onValidCheck(context) }
             }
             //サーバ処理中に表示
             if (profileViewModel.showProcessIndicator.value) {

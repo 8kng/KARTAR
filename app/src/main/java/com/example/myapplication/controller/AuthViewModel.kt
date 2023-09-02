@@ -9,6 +9,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
+import com.example.myapplication.ImageSaveActivity
 import com.example.myapplication.MainActivity
 import com.example.myapplication.view.screen.auth.NotLoggedInActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -43,11 +44,12 @@ class AuthViewModel: ViewModel() {
         }
     }
 
-    fun signInButtonClick() {
+    fun onValidCheck(): Boolean {
         isEmailValid.value = !android.util.Patterns.EMAIL_ADDRESS.matcher(email.value).matches()
         isPasswordValid.value = password.value.length < 6 || password.value.length > 12
 
         allowShowDialog.value = !isEmailValid.value && !isPasswordValid.value
+        return !isEmailValid.value && !isPasswordValid.value
     }
 
     fun signInUser(context: Activity) {
@@ -70,6 +72,28 @@ class AuthViewModel: ViewModel() {
                 }
         } catch (e: Exception) {
             Log.d("登録失敗", e.message.toString())
+            Toast.makeText(context, "登録が失敗しました...", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun loginUser(context: Activity) {
+        Log.d("^^", "start")
+        try {
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(email.value, password.value)
+                .addOnCompleteListener(context) { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(context, "ログインが完了しました!", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(context, ImageSaveActivity::class.java)
+                        context.startActivity(intent)
+                        context.finish()
+                    } else {
+                        Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
+                        Log.d("login", "failed")
+                    }
+                }
+        } catch (e:Exception) {
+            Log.d("ログイン失敗", e.message.toString())
+            Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
         }
     }
 

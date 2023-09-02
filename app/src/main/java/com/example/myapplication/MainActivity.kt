@@ -5,8 +5,9 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
+import com.example.myapplication.view.screen.auth.LoginActivity
 import com.example.myapplication.view.screen.auth.NotLoggedInActivity
-import com.example.myapplication.view.screen.auth.ProfileSetupActivity
+import com.example.myapplication.view.screen.profile.ProfileSetupActivity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(applicationContext, ProfileSetupActivity::class.java)
                 startActivity(intent)
             } else {
-                val intent = Intent(applicationContext, ImageSaveActivity::class.java)
+                val intent = Intent(applicationContext, LoginActivity::class.java)
                 startActivity(intent)
             }
         } else {
