@@ -95,6 +95,10 @@ dependencies {
     //firebaseAuth用に追記
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.android.gms:play-services-auth:20.6.0")
+    //firestore用に追記
+    implementation("com.google.firebase:firebase-firestore:24.7.1")
+    //storage用に追記
+    implementation("com.google.firebase:firebase-storage:20.2.1")
     //Navigation用に追記
     implementation("androidx.navigation:navigation-common:2.5.3")
     //iconを増やすために追記

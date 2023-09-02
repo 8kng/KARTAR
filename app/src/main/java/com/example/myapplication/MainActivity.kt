@@ -34,8 +34,10 @@ class MainActivity : AppCompatActivity() {
             if (userName == "") {
                 val intent = Intent(applicationContext, ProfileSetupActivity::class.java)
                 startActivity(intent)
+            } else {
+                val intent = Intent(applicationContext, ImageSaveActivity::class.java)
+                startActivity(intent)
             }
-            //TODO:ログイン時に飛ぶ画面を設定
         } else {
             val intent = Intent(applicationContext, NotLoggedInActivity::class.java)
             startActivity(intent)
