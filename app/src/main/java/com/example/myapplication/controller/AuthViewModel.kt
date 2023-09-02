@@ -9,11 +9,15 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.myapplication.ImageSaveActivity
 import com.example.myapplication.MainActivity
+import com.example.myapplication.R
 import com.example.myapplication.view.screen.auth.NotLoggedInActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 
 class AuthViewModel: ViewModel() {
     val email = mutableStateOf("")
@@ -22,6 +26,7 @@ class AuthViewModel: ViewModel() {
     val isEmailValid = mutableStateOf(false)
     val isPasswordValid = mutableStateOf(false)
     val allowShowDialog = mutableStateOf(false)
+    val showProcessIndicator = mutableStateOf(false)
 
     private fun onEmailChanged(newValue: String) {
         email.value = newValue
@@ -77,23 +82,52 @@ class AuthViewModel: ViewModel() {
     }
 
     fun loginUser(context: Activity) {
-        Log.d("^^", "start")
-        try {
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(email.value, password.value)
-                .addOnCompleteListener(context) { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(context, "ログインが完了しました!", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(context, ImageSaveActivity::class.java)
-                        context.startActivity(intent)
-                        context.finish()
-                    } else {
-                        Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
-                        Log.d("login", "failed")
+        viewModelScope.launch {
+            showProcessIndicator.value = true
+            try {
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(email.value, password.value)
+                    .addOnCompleteListener(context) { task ->
+                        if (task.isSuccessful) {
+                            val uid = task.result.user?.uid
+                            //サーバにあるユーザ情報をローカルに保存
+                            if (uid != null) {
+                                val userInfo = FirebaseFirestore.getInstance()
+                                    .collection("users")
+                                    .document(uid)
+                                    .get()
+                                    .addOnSuccessListener { document ->
+                                        if (document != null && document.exists()) {
+                                            val userName = document.getString("userName")
+                                            val userIconImage = document.getString("iconImage")
+                                            //情報を基にローカルにユーザ情報を保存
+                                            val sharedPref = context.getSharedPreferences(
+                                                context.getString(R.string.UserInformation),
+                                                Context.MODE_PRIVATE
+                                            )
+                                            val editor = sharedPref.edit()
+                                            editor.putString(context.getString(R.string.UserName), userName.toString())
+                                            editor.putString(context.getString(R.string.imageIcon), userIconImage.toString())
+                                            editor.apply()
+                                            Toast.makeText(context, "ログインが完了しました!", Toast.LENGTH_SHORT).show()
+                                            showProcessIndicator.value = false
+                                            val intent = Intent(context, ImageSaveActivity::class.java)
+                                            context.startActivity(intent)
+                                            context.finish()
+                                        }
+                                    }
+                            }
+                            showProcessIndicator.value = false
+                        } else {
+                            Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
+                            Log.d("login", "failed")
+                            showProcessIndicator.value = false
+                        }
+                    }.addOnFailureListener {
+                        showProcessIndicator.value = false
                     }
-                }
-        } catch (e:Exception) {
-            Log.d("ログイン失敗", e.message.toString())
-            Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
+            } catch (e:Exception) {
+                Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
