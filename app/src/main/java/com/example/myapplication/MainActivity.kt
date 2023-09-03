@@ -12,12 +12,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
         //Firebaseの初期化
         FirebaseApp.initializeApp(this)
 
@@ -35,23 +31,16 @@ class MainActivity : AppCompatActivity() {
             if (userName == "") {  //ユーザ情報が未定の場合
                 val intent = Intent(applicationContext, ProfileSetupActivity::class.java)
                 startActivity(intent)
+                finish()
             } else {  //ログイン・ユーザ情報が保存されている場合
                 val intent = Intent(applicationContext, HomeActivity::class.java)
                 startActivity(intent)
+                finish()
             }
         } else {
             val intent = Intent(applicationContext, NotLoggedInActivity::class.java)
             startActivity(intent)
-        }
-
-        binding.ARStartButton.setOnClickListener{
-            val intent = Intent(applicationContext, AugmentedImageActivity::class.java)
-            startActivity(intent)
-        }
-        binding.imageSaveButton.setOnClickListener{
-            //val intent = Intent(applicationContext, ImageSaveActivity::class.java)
-            val intent = Intent(applicationContext, NotLoggedInActivity::class.java)
-            startActivity(intent)
+            finish()
         }
     }
 }

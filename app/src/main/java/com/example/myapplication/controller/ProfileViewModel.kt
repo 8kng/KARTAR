@@ -1,5 +1,6 @@
 package com.example.myapplication.controller
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -71,6 +72,7 @@ class ProfileViewModel : ViewModel(){
                                 showProcessIndicator.value = false
                                 val intent = Intent(context, HomeActivity::class.java)
                                 context.startActivity(intent)
+                                (context as Activity).finish()
                             }
                         }.addOnFailureListener {
                             Toast.makeText(context, "登録に失敗しました...ネットワーク環境を確かめてください", Toast.LENGTH_SHORT).show()

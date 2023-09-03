@@ -26,7 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SecondActivity" />
+        <activity android:name=".HomeActivity" />
         <activity android:name=".AugmentedImageActivity"/>
         <activity android:name=".ImageSaveActivity"/>
         <activity android:name=".view.screen.auth.NotLoggedInActivity"/>
