@@ -133,7 +133,10 @@ class AuthViewModel: ViewModel() {
         }
     }
 
-    fun signout() {
+    fun signOutUser(context: Activity) {
         FirebaseAuth.getInstance().signOut()
+        val intent = Intent(context, NotLoggedInActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        context.startActivity(intent)
     }
 }

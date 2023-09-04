@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,13 +17,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.MyApplicationTheme
+import com.example.myapplication.view.screen.profile.UserProfileActivity
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,19 +122,27 @@ fun KARTARAppBar() {
         ),
         title = { },
         actions = {
-            AsyncImage(
-                model = imageUrl,
-                contentScale = ContentScale.Crop,
-                contentDescription = null,
-                modifier = Modifier
-                    .border(
-                        width = 0.5.dp,
-                        color = LiteGreen,
-                        shape = CircleShape
-                    )
-                    .clip(CircleShape)
-                    .size(50.dp)
-            )
+            Surface(
+                onClick = {
+                    val intent = Intent(context, UserProfileActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.clip(CircleShape)
+            ) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentScale = ContentScale.Crop,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .border(
+                            width = 0.5.dp,
+                            color = LiteGreen,
+                            shape = CircleShape
+                        )
+                        .clip(CircleShape)
+                        .size(50.dp)
+                )
+            }
         }
     )
 }

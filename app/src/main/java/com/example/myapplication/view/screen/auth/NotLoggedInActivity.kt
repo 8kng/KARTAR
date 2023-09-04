@@ -107,9 +107,11 @@ fun SignInButton(modifier: Modifier = Modifier) {
 
 @Composable
 fun LogInTextButton() {
+    val context = LocalContext.current
     TextButton(
         onClick = {
-        /*TODO:ログイン画面へ移動*/
+            val intent = Intent(context, LoginActivity::class.java)
+            context.startActivity(intent)
         }
     ) {
         Text(
