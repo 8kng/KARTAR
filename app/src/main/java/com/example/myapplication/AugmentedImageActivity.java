@@ -17,6 +17,7 @@
 package com.example.myapplication;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -54,6 +55,7 @@ import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -390,9 +392,21 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
 
     if (useSingleImage) {
 
+      ContextWrapper contextWrapper = new ContextWrapper(this);
+      File directory = contextWrapper.getDir("KARTA", Context.MODE_PRIVATE);
+      final File file = new File(directory, "imageName.png");
+
       augmentedImageDatabase = new AugmentedImageDatabase(session);
-      augmentedImageDatabase.addImage("models/question_head_boy.png", loadAugmentedImageBitmap("gajyumaru.jpg"));
-      augmentedImageDatabase.addImage("models/droidkun.png", loadAugmentedImageBitmap("default.jpg"));
+
+      Log.d("url", file.getPath());
+      if (file.exists()) {
+        Log.d("ファイル", "存在します");
+        augmentedImageDatabase.addImage(file.getPath(), loadAugmentedImageBitmap("gajyumaru.jpg"));
+      } else {
+        Log.d("ファイル", "存在しない");
+      }
+
+      //augmentedImageDatabase.addImage("models/droidkun.png", loadAugmentedImageBitmap("default.jpg"));
 
     }
 

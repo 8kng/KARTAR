@@ -26,9 +26,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SecondActivity" />
+        <activity android:name=".HomeActivity" />
         <activity android:name=".AugmentedImageActivity"/>
         <activity android:name=".ImageSaveActivity"/>
+        <activity android:name=".view.screen.auth.NotLoggedInActivity"/>
+        <activity android:name=".view.screen.auth.SignInActivity"/>
+        <activity android:name=".view.screen.auth.LoginActivity"/>
+        <activity android:name=".view.screen.profile.ProfileSetupActivity"/>
+        <activity android:name=".view.screen.profile.UserProfileActivity"/>
         <meta-data android:name="com.google.ar.core" android:value="required" />
     </application>
 
