@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract.Profile
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -34,7 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
+import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.MyApplicationTheme
 import com.example.myapplication.view.screen.profile.UserProfileActivity
@@ -52,8 +55,9 @@ class HomeActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeActivityScreen() {
+    val profileViewModel = ProfileViewModel()
     Scaffold(
-        topBar = { KARTARAppBar() }
+        topBar = { KARTARAppBar(profileViewModel) }
     ) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -108,13 +112,10 @@ fun EFUDAButton(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KARTARAppBar() {
+fun KARTARAppBar(profileViewModel: ProfileViewModel) {
     val context = LocalContext.current
-    val sharedPref = context.getSharedPreferences(
-        context.getString(R.string.UserInformation),
-        Context.MODE_PRIVATE
-    )
-    val imageUrl = sharedPref.getString(context.getString(R.string.imageIcon), "")
+
+    profileViewModel.updateUserIconFromSharedPref(context)
     TopAppBar(
         modifier = Modifier.padding(
             top = 14.dp,
@@ -124,13 +125,13 @@ fun KARTARAppBar() {
         actions = {
             Surface(
                 onClick = {
-                    val intent = Intent(context, UserProfileActivity::class.java)
+                    val intent = Intent(context, UserProfileActivity()::class.java)
                     context.startActivity(intent)
                 },
                 modifier = Modifier.clip(CircleShape)
             ) {
                 AsyncImage(
-                    model = imageUrl,
+                    model = profileViewModel.prefUserIcon.value,
                     contentScale = ContentScale.Crop,
                     contentDescription = null,
                     modifier = Modifier

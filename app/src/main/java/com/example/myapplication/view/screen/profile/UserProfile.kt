@@ -1,10 +1,13 @@
 package com.example.myapplication.view.screen.profile
 
 import android.app.Activity
-import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -22,6 +25,7 @@ import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Cached
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -46,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
-import com.example.myapplication.R
+import com.example.myapplication.HomeActivity
 import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.DarkGreen
@@ -54,10 +59,9 @@ import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.Yellow
-import com.example.myapplication.view.widget.button.OnValidCheckButton
 import com.example.myapplication.view.widget.textField.UserNameTextField
 
-class UserProfileActivity : ComponentActivity() {
+class UserProfileActivity() : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent{
@@ -71,69 +75,90 @@ class UserProfileActivity : ComponentActivity() {
 private fun UserProfileScreen() {
     val context = LocalContext.current
     val profileViewModel = ProfileViewModel()
-    Scaffold(
-        topBar = { TopAppBar(
-            title = {
-                    Text(
-                        text = "プロフィール",
-                        modifier = Modifier.padding(start = 20.dp)
-                    )
-            },
-            navigationIcon = {
-                IconButton(
-                    onClick = { (context as Activity).finish() },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIos,
-                        contentDescription = "Toggle password visibility",
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.smallTopAppBarColors(
-                navigationIconContentColor = Grey2,
-                titleContentColor = Grey
-            )
-        ) }
-    ) { innerPadding ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            color = MaterialTheme.colorScheme.background,
-        ) {
-            Column(
-                modifier = Modifier,
-                horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Scaffold(
+            topBar = { TopAppBar(
+                title = {
+                        Text(
+                            text = "プロフィール",
+                            modifier = Modifier.padding(start = 20.dp)
+                        )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            val intent = Intent(context, HomeActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            context.startActivity(intent) },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBackIos,
+                            contentDescription = "Toggle password visibility",
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    navigationIconContentColor = Grey2,
+                    titleContentColor = Grey
+                )
+            ) }
+        ) { innerPadding ->
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                color = MaterialTheme.colorScheme.background,
             ) {
-                Spacer(modifier = Modifier.height(80.dp))
-                UserIconImage()
-                Spacer(modifier = Modifier.height(50.dp))
-                UserNameText(profileViewModel)
-                Spacer(modifier = Modifier.height(120.dp))
-                SignOutButton(profileViewModel = profileViewModel)
+                Column(
+                    modifier = Modifier,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(modifier = Modifier.height(80.dp))
+                    UserIcon(profileViewModel)
+                    Spacer(modifier = Modifier.height(50.dp))
+                    UserNameText(profileViewModel)
+                    Spacer(modifier = Modifier.height(120.dp))
+                    SignOutButton(profileViewModel = profileViewModel)
+                }
+                if (profileViewModel.showUserNameDialog.value) {
+                    UserNameChangeDialog(profileViewModel = profileViewModel)
+                } else if (profileViewModel.showSignOutDialog.value) {
+                    SignOutDialog(profileViewModel = profileViewModel)
+                }
             }
-            if (profileViewModel.showUserNameDialog.value) {
-                UserNameChangeDialog(profileViewModel = profileViewModel)
-            } else if(profileViewModel.showSignOutDialog.value) {
-                SignOutDialog(profileViewModel = profileViewModel)
+        }
+        //サーバ処理中に表示
+        if (profileViewModel.showProcessIndicator.value) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(color = LiteGreen)
             }
         }
     }
 }
 
 @Composable
-private fun UserIconImage() {
+fun UserIcon(profileViewModel: ProfileViewModel) {
     val context = LocalContext.current
-    val sharedPref = context.getSharedPreferences(
-        context.getString(R.string.UserInformation),
-        Context.MODE_PRIVATE
-    )
-    val imageUrl = sharedPref.getString(context.getString(R.string.imageIcon), "")
+    profileViewModel.updateUserIconFromSharedPref(context)
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                profileViewModel.changeUserImageIcon(uri, context)
+            }
+        }
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
         AsyncImage(
-            model = imageUrl,
+            model = profileViewModel.prefUserIcon.value,
             contentScale = ContentScale.Crop,
             contentDescription = null,
             modifier = Modifier
@@ -147,7 +172,7 @@ private fun UserIconImage() {
                 .align(Alignment.Center)
         )
         IconButton(
-            onClick = { /*TODO*/ },
+            onClick = { launcher.launch("image/*") },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 60.dp)
