@@ -26,7 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".HomeActivity" />
+        <activity android:name=".HomeActivity"/>
         <activity android:name=".AugmentedImageActivity"/>
         <activity android:name=".ImageSaveActivity"/>
         <activity android:name=".view.screen.auth.NotLoggedInActivity"/>
@@ -34,6 +34,9 @@
         <activity android:name=".view.screen.auth.LoginActivity"/>
         <activity android:name=".view.screen.profile.ProfileSetupActivity"/>
         <activity android:name=".view.screen.profile.UserProfileActivity"/>
+        <activity android:name=".view.screen.create.EFUDAActivity"/>
+        <activity android:name=".view.screen.create.CreateMethodSelectActivity"/>
+        <activity android:name=".view.screen.create.OriginalCreateActivity"/>
         <meta-data android:name="com.google.ar.core" android:value="required" />
     </application>
 

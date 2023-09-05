@@ -40,6 +40,7 @@ import coil.compose.AsyncImage
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.MyApplicationTheme
+import com.example.myapplication.view.screen.create.EFUDAActivity
 import com.example.myapplication.view.screen.profile.UserProfileActivity
 
 class HomeActivity : ComponentActivity() {
@@ -54,7 +55,7 @@ class HomeActivity : ComponentActivity() {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeActivityScreen() {
+fun HomeActivityScreen() {
     val profileViewModel = ProfileViewModel()
     Scaffold(
         topBar = { KARTARAppBar(profileViewModel) }
@@ -100,9 +101,13 @@ fun PlayKARTAButton(modifier: Modifier = Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EFUDAButton(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     Surface(
         modifier = modifier,
-        onClick = {}
+        onClick = {
+            val intent = Intent(context, EFUDAActivity()::class.java)
+            context.startActivity(intent)
+        }
     ) {
         Column {
             ButtonContent(text = "絵札")
