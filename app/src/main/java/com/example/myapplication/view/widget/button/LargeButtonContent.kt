@@ -22,14 +22,21 @@ import com.example.myapplication.theme.Yellow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LargeButtonContent(modifier: Modifier = Modifier, onClick: () -> Unit, text: String) {
+fun LargeButtonContent(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    text: String,
+    border: Int = 8,
+    fontWeight: FontWeight = FontWeight.Bold,
+    fontSize: Int = 30
+) {
     Surface(
         modifier = modifier.shadow(10.dp),
         onClick = { onClick() }
     ) {
         Box(
             modifier
-                .border(width = 8.dp, color = LiteGreen)
+                .border(width = border.dp, color = LiteGreen)
                 .height(140.dp)
                 .background(Yellow)
                 .width(245.dp),
@@ -39,8 +46,8 @@ fun LargeButtonContent(modifier: Modifier = Modifier, onClick: () -> Unit, text:
                 text = text,
                 textAlign = TextAlign.Center,
                 color = Grey,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = fontSize.sp,
+                fontWeight = fontWeight
             )
         }
     }
