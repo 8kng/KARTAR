@@ -103,5 +103,6 @@ dependencies {
     implementation("androidx.navigation:navigation-common:2.5.3")
     //iconを増やすために追記
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
-
+    //googleFont用に追記
+    implementation("com.google.android.material:compose-theme-adapter-3:1.1.1")
 }
