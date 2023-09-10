@@ -1,19 +1,12 @@
 package com.example.myapplication.view.screen.auth
 
 import android.app.Activity
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,38 +14,28 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.R
 import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
-import com.example.myapplication.theme.LiteGreen
-import com.example.myapplication.theme.Yellow
+import com.example.myapplication.view.widget.button.ButtonContent
 import com.example.myapplication.view.widget.button.OnValidCheckButton
 import com.example.myapplication.view.widget.textField.EmailTextField
 import com.example.myapplication.view.widget.textField.PasswordTextField
 
-class SignInActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val authViewModel = AuthViewModel()
-        setContent{
-            SignInScreen(authViewModel)
-            if (authViewModel.allowShowDialog.value) {
-                CheckAlertDialog(authViewModel = authViewModel)
-            }
-        }
-    }
-}
-
 @Composable
-fun SignInScreen(authViewModel: AuthViewModel = AuthViewModel()) {
+fun SignInScreen(navController: NavController, authViewModel: AuthViewModel) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -60,7 +43,8 @@ fun SignInScreen(authViewModel: AuthViewModel = AuthViewModel()) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(80.dp))
             Text(
-                text = "メールアドレス&パスワードを入力してください"
+                text = "メールアドレス&パスワードを入力してください",
+                color = Grey,
             )
             Spacer(modifier = Modifier.height(50.dp))
             EmailTextField(authViewModel)
@@ -81,21 +65,28 @@ fun SignInScreen(authViewModel: AuthViewModel = AuthViewModel()) {
                 )
             }
             Spacer(modifier = Modifier.height(230.dp))
-            OnValidCheckButton(Modifier) {
-                authViewModel.onValidCheck()
-            }
+            OnValidButton(authViewModel = authViewModel)
         }
+    }
+    if (authViewModel.allowShowDialog.value) {
+        CheckAlertDialog(authViewModel = authViewModel, navController)
     }
 }
 
-@Preview
 @Composable
-fun SignInScreenView() {
-    SignInScreen()
+private fun OnValidButton(authViewModel: AuthViewModel) {
+    ButtonContent(
+        modifier = Modifier.height(50.dp).width(250.dp),
+        onClick = { authViewModel.onValidCheck() },
+        text = "OK",
+        border = 4,
+        fontSize = 18,
+        fontWeight = FontWeight.Normal
+    )
 }
 
 @Composable
-fun CheckAlertDialog(authViewModel: AuthViewModel) {
+fun CheckAlertDialog(authViewModel: AuthViewModel, navController: NavController) {
     val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { authViewModel.allowShowDialog.value = false },
@@ -115,10 +106,16 @@ fun CheckAlertDialog(authViewModel: AuthViewModel) {
                 Text(text = "NO", color = Grey2, fontSize = 16.sp)
             }
             TextButton(
-                onClick = { authViewModel.signInUser(context as Activity)}
+                onClick = { authViewModel.signInUser((context as Activity), navController = navController)}
             ) {
                 Text(text = "OK", color = DarkGreen, fontSize = 16.sp)
             }
         }
     )
+}
+
+@Preview
+@Composable
+fun SignInScreenView() {
+    SignInScreen(rememberNavController(), AuthViewModel())
 }

@@ -4,20 +4,15 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.MainActivity
-import com.example.myapplication.R
 import com.example.myapplication.model.KARTAData
-import com.example.myapplication.view.screen.create.EFUDAActivity
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
-import kotlin.system.exitProcess
 
 class CreateViewModel : ViewModel() {
     val searchBoxText = mutableStateOf("")
@@ -38,8 +33,9 @@ class CreateViewModel : ViewModel() {
         kartaDataList.value = hiraganaList.map { KARTAData(efuda = "", yomifuda = it) }
     }
 
+    //検索ボックスの入力処理
     fun onSearchBoxChange(newValue: String) {
-        if (newValue.length  < 20) {
+        if (newValue.length  < 21) {
             searchBoxText.value = newValue
         }
     }
@@ -134,8 +130,8 @@ class CreateViewModel : ViewModel() {
                 editor.apply()
                 showInputTitleDialog.value = false
                 Toast.makeText(context, "保存に成功しました", Toast.LENGTH_SHORT).show()
-                //かるた一覧画面へ移動
-                val intent = Intent(context, EFUDAActivity::class.java)
+                //TODO:かるた一覧画面へ移動
+                val intent = Intent(context, MainActivity::class.java)
                 context.startActivity(intent)
                 (context as Activity).finish()
             } catch (e: Exception) {

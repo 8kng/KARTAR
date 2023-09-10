@@ -24,12 +24,13 @@ import com.example.myapplication.theme.Grey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LargeButtonContent(
+fun ButtonContent(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     text: String,
     border: Int = 8,
-    fontSize: Int = 30
+    fontSize: Int = 30,
+    fontWeight: FontWeight = FontWeight.Bold
 ) {
     Surface(
         modifier = modifier,
@@ -52,7 +53,7 @@ fun LargeButtonContent(
                 textAlign = TextAlign.Center,
                 color = Grey,
                 fontSize = fontSize.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = fontWeight,
                 fontFamily = FontFamily(Font(R.font.kiwimaru_medium))
             )
         }

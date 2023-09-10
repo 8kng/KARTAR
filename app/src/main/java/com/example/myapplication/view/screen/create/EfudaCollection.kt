@@ -1,14 +1,6 @@
 package com.example.myapplication.view.screen.create
 
-import android.content.Intent
-import android.graphics.drawable.Icon
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,39 +23,35 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.HomeActivityScreen
-import com.example.myapplication.HomeActivityScreenView
+import androidx.navigation.NavController
+import com.example.myapplication.R
 import com.example.myapplication.controller.CreateViewModel
 import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.theme.ButtonContainer
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
+import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
-import com.example.myapplication.theme.Yellow
 import com.example.myapplication.theme.Yellow2
 import com.example.myapplication.view.widget.AppBar
-
-class EFUDAActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent{
-            EFUDAScreen()
-        }
-    }
-}
+import com.example.myapplication.view.widget.button.ButtonContent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EFUDAScreen(profileViewModel: ProfileViewModel = ProfileViewModel(), createViewModel: CreateViewModel = CreateViewModel()) {
+fun EfudaCollectionScreen(
+    navController: NavController,
+    profileViewModel: ProfileViewModel,
+    createViewModel: CreateViewModel
+) {
     Scaffold(
-        topBar = { AppBar(profileViewModel) }
+        topBar = { AppBar(navController, profileViewModel) }
     ) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -75,7 +63,7 @@ private fun EFUDAScreen(profileViewModel: ProfileViewModel = ProfileViewModel(),
                 modifier = Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                RowButtons()
+                RowButtons(navController)
                 Spacer(modifier = Modifier.height(30.dp))
                 SearchBox(createViewModel = createViewModel)
             }
@@ -84,22 +72,42 @@ private fun EFUDAScreen(profileViewModel: ProfileViewModel = ProfileViewModel(),
 }
 
 @Composable
-private fun RowButtons() {
-    val context = LocalContext.current
+private fun RowButtons(navController: NavController) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ){
         Spacer(modifier = Modifier.height(20.dp))
-        ButtonContent(onClick = {
-            val intent = Intent(context, CreateMethodSelectActivity()::class.java)
-            context.startActivity(intent)
-                                },
-            text = "作成"
-        )
+        CreateButton(navController = navController)
         Spacer(modifier = Modifier.width(30.dp))
-        ButtonContent(onClick = { /*TODO*/ }, text = "サーバ検索")
+        SaverSearchButton()
     }
+}
+
+@Composable
+private fun CreateButton(navController: NavController) {
+    ButtonContent(
+        modifier = Modifier
+            .height(75.dp)
+            .width(145.dp),
+        onClick = { navController.navigate("createMethodSelect") },
+        text = "作成",
+        fontSize = 18,
+        border = 6
+    )
+}
+
+@Composable
+private fun SaverSearchButton() {
+    ButtonContent(
+        modifier = Modifier
+            .height(75.dp)
+            .width(145.dp),
+        onClick = { /*TODO:さーば検索画面へ移動*/ },
+        text = "サーバ検索",
+        fontSize = 18,
+        border = 6
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,7 +127,15 @@ fun SearchBox(createViewModel: CreateViewModel) {
             Text(
                 text = "検索",
                 color = DarkGreen,
+                fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
                 fontWeight = FontWeight.Bold,
+            )
+        },
+        placeholder = {
+            Text(
+                text = "1～20文字で入力してください",
+                fontSize = 12.sp,
+                color = Grey2
             )
         },
         leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
@@ -127,44 +143,11 @@ fun SearchBox(createViewModel: CreateViewModel) {
             textColor = Grey,
             focusedBorderColor = DarkGreen,
             unfocusedBorderColor = LiteGreen,
-            containerColor = Yellow2
+            containerColor = ButtonContainer
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Done,
         ),
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ButtonContent(modifier: Modifier = Modifier, onClick: () -> Unit, text: String) {
-    Surface(
-        modifier = modifier.shadow(10.dp),
-        onClick = { onClick() }
-    ) {
-        Box(
-            modifier
-                .border(width = 5.dp, color = LiteGreen)
-                .height(70.dp)
-                .background(Yellow)
-                .width(145.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = text,
-                modifier = Modifier,
-                color = Grey,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun EFUDAScreenPreview() {
-    EFUDAScreen()
 }

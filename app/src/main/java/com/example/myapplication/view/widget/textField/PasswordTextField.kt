@@ -11,13 +11,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.sp
+import com.example.myapplication.R
 import com.example.myapplication.controller.AuthViewModel
+import com.example.myapplication.theme.ButtonContainer
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
@@ -30,11 +34,7 @@ fun PasswordTextField(authViewModel: AuthViewModel = AuthViewModel()) {
     OutlinedTextField(
         value = authViewModel.password.value,
         onValueChange = { newValue ->
-            val isAlphaNumeric = newValue.all { it.isLetterOrDigit() }
-            val isBackspacePressed = newValue.length < authViewModel.password.value.length
-            if (isAlphaNumeric && newValue.length <= 12 || isBackspacePressed) {
-                authViewModel.onPasswordChanged(newValue)
-            }
+            authViewModel.onPasswordChanged(newValue)
         },
         singleLine = true,
         placeholder = {
@@ -49,6 +49,7 @@ fun PasswordTextField(authViewModel: AuthViewModel = AuthViewModel()) {
             Text(
                 text = "パスワード",
                 color = DarkGreen,
+                fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
                 fontWeight = FontWeight.Bold,
             )
         },
@@ -56,7 +57,7 @@ fun PasswordTextField(authViewModel: AuthViewModel = AuthViewModel()) {
             textColor = Grey,
             focusedBorderColor = DarkGreen,
             unfocusedBorderColor = LiteGreen,
-            containerColor = Yellow2
+            containerColor = ButtonContainer.copy(alpha = 0.5f)
         ),
         trailingIcon = {
             val image = if (authViewModel.passwordVisibility.value) Icons.Default.Visibility else Icons.Default.VisibilityOff

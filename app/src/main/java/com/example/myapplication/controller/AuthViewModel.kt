@@ -3,21 +3,17 @@ package com.example.myapplication.controller
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.HomeActivity
-import com.example.myapplication.ImageSaveActivity
+import androidx.navigation.NavController
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
-import com.example.myapplication.view.screen.auth.NotLoggedInActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 class AuthViewModel: ViewModel() {
@@ -29,24 +25,55 @@ class AuthViewModel: ViewModel() {
     val allowShowDialog = mutableStateOf(false)
     val showProcessIndicator = mutableStateOf(false)
 
-    private fun onEmailChanged(newValue: String) {
-        email.value = newValue
-    }
-    fun onPasswordChanged(newValue: String) {
-        password.value = newValue
-    }
-    fun onEmailValid(newValue: String) {
+    //ユーザのメールアドレス入力処理
+    fun onEmailChange(newValue: String) {
         val isValid = newValue.all {
             (it in 'a'..'z') ||
-            (it in 'A'..'Z') ||
-            (it in '0'..'9') ||
-            it == '@' ||
-            it == '.' ||
-            it == '-' ||
-            it == '_'
+                    (it in 'A'..'Z') ||
+                    (it in '0'..'9') ||
+                    it == '@' ||
+                    it == '.' ||
+                    it == '-' ||
+                    it == '_'
         }
         if (isValid) {
-            onEmailChanged(newValue)
+            email.value = newValue
+        }
+    }
+
+    //ユーザのパスワード入力処理
+    fun onPasswordChanged(newValue: String) {
+        val isAlphaNumeric = newValue.all { it.isLetterOrDigit() }
+        val isBackspacePressed = newValue.length < password.value.length
+        if (isAlphaNumeric && newValue.length <= 12 || isBackspacePressed) {
+            password.value = newValue
+        }
+    }
+
+    //サーバに入力した情報を新規登録してサインインする処理
+    fun signInUser(context: Activity, navController: NavController) {
+        try {
+            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email.value, password.value)
+                .addOnCompleteListener(context) { task ->
+                    //登録成功時の処理
+                    if (task.isSuccessful) {
+                        allowShowDialog.value = false
+                        Toast.makeText(context, "登録が完了しました!", Toast.LENGTH_SHORT).show()
+                        //ユーザ情報入力画面に移動
+                        navController.navigate("profileSetup") {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        }
+                        //登録失敗の処理
+                    } else if (task.exception?.message.toString() == "The email address is already in use by another account.") {
+                        allowShowDialog.value = false
+                        Toast.makeText(context, "既に登録されています...", Toast.LENGTH_SHORT).show()
+                    } else {
+                        allowShowDialog.value = false
+                        Toast.makeText(context, "登録が失敗しました...", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        } catch (e: Exception) {
+            Toast.makeText(context, "登録が失敗しました...", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -58,31 +85,8 @@ class AuthViewModel: ViewModel() {
         return !isEmailValid.value && !isPasswordValid.value
     }
 
-    fun signInUser(context: Activity) {
-        try {
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email.value, password.value)
-                .addOnCompleteListener(context) { task ->
-                    if (task.isSuccessful) {
-                        allowShowDialog.value = false
-                        Toast.makeText(context, "登録が完了しました!", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(context, MainActivity::class.java)
-                        context.startActivity(intent)
-                        context.finish()
-                    } else if (task.exception?.message.toString() == "The email address is already in use by another account.") {
-                        allowShowDialog.value = false
-                        Toast.makeText(context, "既に登録されています...", Toast.LENGTH_SHORT).show()
-                    } else {
-                        allowShowDialog.value = false
-                        Toast.makeText(context, "登録が失敗しました...", Toast.LENGTH_SHORT).show()
-                    }
-                }
-        } catch (e: Exception) {
-            Log.d("登録失敗", e.message.toString())
-            Toast.makeText(context, "登録が失敗しました...", Toast.LENGTH_SHORT).show()
-        }
-    }
 
-    fun loginUser(context: Activity) {
+    fun loginUser(navController: NavController, context: Activity) {
         viewModelScope.launch {
             showProcessIndicator.value = true
             try {
@@ -92,7 +96,7 @@ class AuthViewModel: ViewModel() {
                             val uid = task.result.user?.uid
                             //サーバにあるユーザ情報をローカルに保存
                             if (uid != null) {
-                                val userInfo = FirebaseFirestore.getInstance()
+                                FirebaseFirestore.getInstance()
                                     .collection("users")
                                     .document(uid)
                                     .get()
@@ -112,9 +116,9 @@ class AuthViewModel: ViewModel() {
                                             Toast.makeText(context, "ログインが完了しました!", Toast.LENGTH_SHORT).show()
                                             showProcessIndicator.value = false
                                             //HomeActivityに移動
-                                            val intent = Intent(context, HomeActivity::class.java)
-                                            context.startActivity(intent)
-                                            context.finish()
+                                            navController.navigate("home") {
+                                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                            }
                                         }
                                     }
                             }
@@ -133,10 +137,15 @@ class AuthViewModel: ViewModel() {
         }
     }
 
-    fun signOutUser(context: Activity) {
+    fun signOutUser(navController: NavController, context: Context) {
         FirebaseAuth.getInstance().signOut()
-        val intent = Intent(context, NotLoggedInActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        context.startActivity(intent)
+        navController.navigate("notLoggedIn") {
+            popUpTo(navController.graph.startDestDisplayName) { inclusive = true }
+        }
+        val sharedPref: SharedPreferences = context.getSharedPreferences(context.getString(R.string.UserInformation), Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            clear()
+            commit()
+        }
     }
 }

@@ -100,7 +100,7 @@ dependencies {
     //storage用に追記
     implementation("com.google.firebase:firebase-storage:20.2.1")
     //Navigation用に追記
-    implementation("androidx.navigation:navigation-common:2.5.3")
+    implementation("androidx.navigation:navigation-compose:2.7.2")
     //iconを増やすために追記
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
     //googleFont用に追記

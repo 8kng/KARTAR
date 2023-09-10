@@ -1,6 +1,5 @@
 package com.example.myapplication.view.screen.create
 
-import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -50,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.R
 import com.example.myapplication.controller.CreateViewModel
@@ -60,26 +60,25 @@ import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
-import com.example.myapplication.theme.Grey3
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.Yellow2
 import com.example.myapplication.view.widget.AppBar
-import com.example.myapplication.view.widget.button.LargeButtonContent
+import com.example.myapplication.view.widget.button.ButtonContent
 
 class OriginalCreateActivity() : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent{
-            OriginalCreateScreen()
+            //OriginalCreateScreen()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OriginalCreateScreen(profileViewModel: ProfileViewModel = ProfileViewModel(), createViewModel: CreateViewModel = CreateViewModel()) {
+fun OriginalCreateScreen(navController: NavController, profileViewModel: ProfileViewModel = ProfileViewModel(LocalContext.current), createViewModel: CreateViewModel = CreateViewModel()) {
     Scaffold(
-        topBar = { AppBar(profileViewModel) }
+        topBar = { AppBar(navController, profileViewModel) }
     ) { innerPadding ->
         Surface(
             modifier = Modifier
@@ -250,7 +249,7 @@ fun YomifudaTextField(createViewModel: CreateViewModel, index: Int) {
 @Composable
 private fun SaveKartaButton(createViewModel: CreateViewModel) {
     val context = LocalContext.current
-    LargeButtonContent(
+    ButtonContent(
         modifier = Modifier
             .height(48.dp)
             .fillMaxWidth()
@@ -365,5 +364,5 @@ private fun EditField(
 @Preview
 @Composable
 private fun OriginalCreateScreenPreview() {
-    OriginalCreateScreen()
+    //OriginalCreateScreen()
 }

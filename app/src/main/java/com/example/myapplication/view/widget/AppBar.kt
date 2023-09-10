@@ -20,14 +20,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.LiteGreen
-import com.example.myapplication.view.screen.profile.UserProfileActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(profileViewModel: ProfileViewModel) {
+fun AppBar(navController: NavController, profileViewModel: ProfileViewModel) {
     val context = LocalContext.current
     profileViewModel.updateUserIconFromSharedPref(context)
     TopAppBar(
@@ -40,7 +40,7 @@ fun AppBar(profileViewModel: ProfileViewModel) {
         title = { },
         navigationIcon = {
             IconButton(
-                onClick = { (context as Activity).finish() },
+                onClick = { navController.popBackStack() },
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBackIos,
@@ -49,27 +49,12 @@ fun AppBar(profileViewModel: ProfileViewModel) {
             }
         },
         actions = {
-            Surface(
-                onClick = {
-                    val intent = Intent(context, UserProfileActivity()::class.java)
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.clip(CircleShape)
-            ) {
-                AsyncImage(
-                    model = profileViewModel.prefUserIcon.value,
-                    contentScale = ContentScale.Crop,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .border(
-                            width = 0.5.dp,
-                            color = LiteGreen,
-                            shape = CircleShape
-                        )
-                        .clip(CircleShape)
-                        .size(40.dp)
-                )
-            }
+            CircleUserIcon(
+                modifier = Modifier.size(40.dp),
+                profileViewModel = profileViewModel,
+                borderWidth = 1,
+                navController = navController
+            )
         }
     )
 }
