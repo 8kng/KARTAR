@@ -18,6 +18,7 @@ import com.example.myapplication.view.screen.auth.NotLoggedInScreen
 import com.example.myapplication.view.screen.auth.SignInScreen
 import com.example.myapplication.view.screen.create.CreateMethodSelectScreen
 import com.example.myapplication.view.screen.create.EfudaCollectionScreen
+import com.example.myapplication.view.screen.create.KartaDetailScreen
 import com.example.myapplication.view.screen.create.OriginalCreateScreen
 import com.example.myapplication.view.screen.profile.ProfileSetupScreen
 import com.example.myapplication.view.screen.profile.UserProfileScreen
@@ -73,6 +74,10 @@ class MainActivity: ComponentActivity() {
                         createViewModel = CreateViewModel()
                     )
                 }
+                composable("${Screen.KartaDetail.route}/{kartaUid}") { navBackStackEntry ->
+                    val kartaUid = navBackStackEntry.arguments?.getString("kartaUid").toString()
+                    KartaDetailScreen(navController = navController, profileViewModel = ProfileViewModel(context), kartaUid = kartaUid, createViewModel = CreateViewModel())
+                }
                 composable(Screen.CreateMethodSelect.route) { CreateMethodSelectScreen(navController = navController ,profileViewModel = ProfileViewModel(context)) }
                 composable(Screen.OriginalCreate.route) { OriginalCreateScreen(navController = navController) }
             }
@@ -86,6 +91,7 @@ class MainActivity: ComponentActivity() {
         object Login: Screen("login")
         object ProfileSetup: Screen("profileSetup")
         object EfudaCollection: Screen("efudaCollection")
+        object KartaDetail: Screen("kartaDetail")
         object UserProfile: Screen("userProfile")
         object CreateMethodSelect: Screen("createMethodSelect")
         object OriginalCreate: Screen("originalCreate")

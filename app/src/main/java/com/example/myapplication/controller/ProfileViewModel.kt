@@ -65,7 +65,6 @@ class ProfileViewModel(context: Context) : ViewModel(){
                     val storageRef = FirebaseStorage.getInstance().reference
                     val imageRef = storageRef.child("iconImages/${uid}")
                     val uploadTask = localImageUri.value?.let { imageRef.putFile(it) }
-                    Log.d("^^", uid.toString())
                     uploadTask?.addOnSuccessListener {
                         imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
                             if (uid != null)  {

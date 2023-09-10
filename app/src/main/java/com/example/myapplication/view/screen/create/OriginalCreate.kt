@@ -1,8 +1,6 @@
 package com.example.myapplication.view.screen.create
 
 import android.net.Uri
-import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -64,15 +62,6 @@ import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.Yellow2
 import com.example.myapplication.view.widget.AppBar
 import com.example.myapplication.view.widget.button.ButtonContent
-
-class OriginalCreateActivity() : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent{
-            //OriginalCreateScreen()
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -149,7 +138,7 @@ fun KARTALazyRow(createViewModel: CreateViewModel) {
 }
 
 @Composable
-private fun SettingText(text: String) {
+fun SettingText(text: String) {
     Text(
         text = text,
         color = DarkRed,
@@ -255,7 +244,7 @@ private fun SaveKartaButton(createViewModel: CreateViewModel) {
             .fillMaxWidth()
             .padding(start = 32.dp, end = 32.dp)
             .background(Color.Transparent),
-        onClick = { createViewModel.onClickSaveButton(context = context) },
+        onClick = { createViewModel.onClickSaveButton() },
         text = "保存する",
         border = 4,
         fontSize = 16,

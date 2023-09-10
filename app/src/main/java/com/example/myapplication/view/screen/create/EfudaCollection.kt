@@ -1,7 +1,6 @@
 package com.example.myapplication.view.screen.create
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
@@ -56,7 +53,6 @@ import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
-import com.example.myapplication.theme.Grey3
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.view.widget.AppBar
 import com.example.myapplication.view.widget.button.ButtonContent
@@ -91,7 +87,7 @@ fun EfudaCollectionScreen(
                     fontSize = 16.sp
                 )
                 Spacer(modifier = Modifier.height(10.dp))
-                KartaDirectoryList(createViewModel = createViewModel)
+                KartaDirectoryList(navController, createViewModel = createViewModel)
             }
         }
     }
@@ -178,8 +174,9 @@ fun SearchBox(createViewModel: CreateViewModel) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KartaDirectoryList(createViewModel: CreateViewModel) {
+fun KartaDirectoryList(navController: NavController, createViewModel: CreateViewModel) {
     val context = LocalContext.current
     createViewModel.getKartaDirectories(context)
     
@@ -189,31 +186,35 @@ fun KartaDirectoryList(createViewModel: CreateViewModel) {
             val kartaName = sharedPref.getString("title", "")
             val kartaDescription = sharedPref.getString("description", "")
 
-            Box(
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp)
-                    .background(DarkRed.copy(alpha = 0.05f), shape = RoundedCornerShape(5.dp))
+            Surface(
+                onClick = { navController.navigate("kartaDetail/${createViewModel.kartaDirectories.value[index].name}") }
             ) {
-                Row(
+                Box(
                     modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
+                        .padding(start = 20.dp, end = 20.dp)
+                        .background(DarkRed.copy(alpha = 0.05f), shape = RoundedCornerShape(5.dp))
                 ) {
-                    kartaImage(createViewModel, index)
-                    Column(modifier = Modifier.padding(start = 10.dp)) {
-                        Text(
-                            text = kartaName.toString(),
-                            fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
-                            fontSize = 18.sp,
-                            color = Grey
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = kartaDescription.toString(),
-                            fontSize = 14.sp,
-                            color = Grey2
-                        )
+                    Row(
+                        modifier = Modifier
+                            .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        kartaImage(createViewModel, index)
+                        Column(modifier = Modifier.padding(start = 10.dp)) {
+                            Text(
+                                text = kartaName.toString(),
+                                fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
+                                fontSize = 18.sp,
+                                color = Grey
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = kartaDescription.toString(),
+                                fontSize = 14.sp,
+                                color = Grey2
+                            )
+                        }
                     }
                 }
             }
@@ -222,7 +223,7 @@ fun KartaDirectoryList(createViewModel: CreateViewModel) {
 }
 
 @Composable
-fun kartaImage(createViewModel: CreateViewModel, index: Int) {
+private fun kartaImage(createViewModel: CreateViewModel, index: Int) {
     val context = LocalContext.current
     val imageFile = File(context.filesDir, "karta/${createViewModel.kartaDirectories.value[index].name}/0.png")
     val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
