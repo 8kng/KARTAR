@@ -17,6 +17,8 @@ import java.util.UUID
 class CreateViewModel : ViewModel() {
     val searchBoxText = mutableStateOf("")
     val isSearchBoxTextValid = mutableStateOf(false)
+    //かるたを保存しているディレクトリー一覧
+    val kartaDirectories = mutableStateOf<List<File>>(listOf())
     //オリジナルかるた作成用の変数
     val kartaDataList = mutableStateOf(listOf(KARTAData("", "")))
     val hiraganaList = listOf("あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", "さ", "し", "す", "せ", "そ", "た", "ち", "つ", "て", "と", "な", "に", "ぬ", "ね", "の", "は", "ひ", "ふ", "へ", "ほ", "ま", "み", "む", "め", "も", "や", "ゆ", "よ", "ら", "り", "る", "れ", "ろ", "わ")
@@ -38,6 +40,12 @@ class CreateViewModel : ViewModel() {
         if (newValue.length  < 21) {
             searchBoxText.value = newValue
         }
+    }
+
+    //かるたディレクトリー取得
+    fun getKartaDirectories(context: Context) {
+        val dir = File(context.filesDir, "karta")
+        kartaDirectories.value = dir.listFiles().filter { it.isDirectory }
     }
 
     //読み札の入力処理
