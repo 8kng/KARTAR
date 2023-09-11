@@ -114,37 +114,40 @@ fun ShowGetKartaDataColumn(kartaSearchViewModel: KartaSearchViewModel) {
 
                 onClick = { /*TODO:かるたタップ時に詳細を表示*/ }
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(DarkRed.copy(alpha = 0.05f), shape = RoundedCornerShape(5.dp))
-                ) {
-                    Row(
+                Column {
+                    Box(
                         modifier = Modifier
-                            .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
+                            .background(DarkRed.copy(alpha = 0.05f), shape = RoundedCornerShape(5.dp))
                     ) {
-                        KartaImage(kartaSearchViewModel.kartaDataFromServerList.value[index].kartaImage)
-                        Column(modifier = Modifier.padding(start = 10.dp)) {
-                            Text(
-                                text = kartaSearchViewModel.kartaDataFromServerList.value[index].title,
-                                fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
-                                fontSize = 18.sp,
-                                color = Grey
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = "ジャンル:${kartaSearchViewModel.kartaDataFromServerList.value[index].genre}",
-                                fontSize = 14.sp,
-                                color = Grey2
-                            )
-                            Text(
-                                text = kartaSearchViewModel.kartaDataFromServerList.value[index].description,
-                                fontSize = 14.sp,
-                                color = Grey2
-                            )
+                        Row(
+                            modifier = Modifier
+                                .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            KartaImage(kartaSearchViewModel.kartaDataFromServerList.value[index].kartaImage)
+                            Column(modifier = Modifier.padding(start = 10.dp)) {
+                                Text(
+                                    text = kartaSearchViewModel.kartaDataFromServerList.value[index].title,
+                                    fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
+                                    fontSize = 18.sp,
+                                    color = Grey
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "ジャンル:${kartaSearchViewModel.kartaDataFromServerList.value[index].genre}",
+                                    fontSize = 14.sp,
+                                    color = Grey2
+                                )
+                                Text(
+                                    text = kartaSearchViewModel.kartaDataFromServerList.value[index].description,
+                                    fontSize = 14.sp,
+                                    color = Grey2
+                                )
+                            }
                         }
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
             }
         }
