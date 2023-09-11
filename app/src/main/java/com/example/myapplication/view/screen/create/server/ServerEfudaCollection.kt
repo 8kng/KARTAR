@@ -1,13 +1,12 @@
-package com.example.myapplication.view.screen.create
+package com.example.myapplication.view.screen.create.server
 
-import android.content.Context
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,51 +18,43 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Cached
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.R
-import com.example.myapplication.controller.CreateViewModel
+import com.example.myapplication.controller.KartaSearchViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.ButtonBorder
 import com.example.myapplication.theme.ButtonContainer
-import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
-import com.example.myapplication.theme.LiteGreen
+import com.example.myapplication.view.screen.create.EditField
 import com.example.myapplication.view.widget.AppBar
-import com.example.myapplication.view.widget.button.ButtonContent
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EfudaCollectionScreen(
+fun ServerEfudaCollectionScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
-    createViewModel: CreateViewModel
+    kartaSearchViewModel: KartaSearchViewModel
 ) {
     Scaffold(
         topBar = { AppBar(navController, profileViewModel) }
@@ -78,124 +69,53 @@ fun EfudaCollectionScreen(
                 modifier = Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                RowButtons(navController)
-                Spacer(modifier = Modifier.height(30.dp))
-                /*
-                TODO:現状必要ないので時間があったらやるかな～
-                SearchBox(createViewModel = createViewModel)
+                ServerKartaSearchBox(kartaSearchViewModel = kartaSearchViewModel)
+                ChangeSearchTypeButton(kartaSearchViewModel = kartaSearchViewModel)
                 Spacer(modifier = Modifier.height(20.dp))
-                */
-                Text(
-                    text = "かるた一覧",
-                    fontSize = 16.sp
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                KartaDirectoryList(navController, createViewModel = createViewModel)
+                Text(text = "サーバのかるた一覧", color = Grey)
+                ShowGetKartaDataColumn(kartaSearchViewModel)
             }
         }
     }
 }
 
 @Composable
-private fun RowButtons(navController: NavController) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ){
-        Spacer(modifier = Modifier.height(20.dp))
-        CreateButton(navController = navController)
-        Spacer(modifier = Modifier.width(30.dp))
-        SaverSearchButton(navController)
+fun ServerKartaSearchBox(kartaSearchViewModel: KartaSearchViewModel) {
+    EditField(
+        value = kartaSearchViewModel.searchKeyword.value,
+        placeholder = kartaSearchViewModel.searchBoxPlaceholder.value,
+        onClick = { newValue -> kartaSearchViewModel.onClickServerKartaSearchBox(newValue = newValue) },
+        isError = false,
+        label = kartaSearchViewModel.searchBoxLabel.value
+    )
+}
+
+@Composable
+fun ChangeSearchTypeButton(kartaSearchViewModel: KartaSearchViewModel) {
+    IconButton(onClick = { kartaSearchViewModel.changeSearchType() }) {
+        Icon(
+            modifier = Modifier.size(30.dp),
+            imageVector = Icons.Default.Cached,
+            contentDescription = null,
+            tint = DarkRed.copy(alpha = 0.8f),
+        )
     }
 }
 
-@Composable
-private fun CreateButton(navController: NavController) {
-    ButtonContent(
-        modifier = Modifier
-            .height(75.dp)
-            .width(145.dp),
-        onClick = { navController.navigate("createMethodSelect") },
-        text = "作成",
-        fontSize = 18,
-        border = 6
-    )
-}
-
-@Composable
-private fun SaverSearchButton(navController: NavController) {
-    ButtonContent(
-        modifier = Modifier
-            .height(75.dp)
-            .width(145.dp),
-        onClick = { navController.navigate("serverEfudaCollection") },
-        text = "サーバ検索",
-        fontSize = 18,
-        border = 6
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBox(createViewModel: CreateViewModel) {
-    OutlinedTextField(
-        modifier = Modifier
-            .height(56.dp)
-            .width(320.dp),
-        value = createViewModel.searchBoxText.value,
-        onValueChange = { newValue ->
-            createViewModel.onSearchBoxChange(newValue)
-        },
-        singleLine = true,
-        isError = createViewModel.isSearchBoxTextValid.value,
-        label = {
-            Text(
-                text = "検索",
-                color = DarkGreen,
-                fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
-                fontWeight = FontWeight.Bold,
-            )
-        },
-        placeholder = {
-            Text(
-                text = "1～20文字で入力してください",
-                fontSize = 12.sp,
-                color = Grey2
-            )
-        },
-        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            textColor = Grey,
-            focusedBorderColor = DarkGreen,
-            unfocusedBorderColor = LiteGreen,
-            containerColor = ButtonContainer
-        ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Done,
-        ),
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun KartaDirectoryList(navController: NavController, createViewModel: CreateViewModel) {
-    val context = LocalContext.current
-    createViewModel.getKartaDirectories(context)
-    
-    LazyColumn {
-        items(createViewModel.kartaDirectories.value.size) { index ->
-            val sharedPref = context.getSharedPreferences(createViewModel.kartaDirectories.value[index].name, Context.MODE_PRIVATE)
-            val kartaName = sharedPref.getString("title", "")
-            val kartaDescription = sharedPref.getString("description", "")
-            val kartaGenre = sharedPref.getString("genre", "")
-
+fun ShowGetKartaDataColumn(kartaSearchViewModel: KartaSearchViewModel) {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(6.dp)
+    ) {
+        items(kartaSearchViewModel.kartaDataFromServerList.value.size) { index ->
             Surface(
-                onClick = { navController.navigate("kartaDetail/${createViewModel.kartaDirectories.value[index].name}") }
+
+                onClick = { /*TODO:かるたタップ時に詳細を表示*/ }
             ) {
                 Box(
                     modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp)
                         .background(DarkRed.copy(alpha = 0.05f), shape = RoundedCornerShape(5.dp))
                 ) {
                     Row(
@@ -204,22 +124,22 @@ fun KartaDirectoryList(navController: NavController, createViewModel: CreateView
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        kartaImage(createViewModel, index)
+                        KartaImage(kartaSearchViewModel.kartaDataFromServerList.value[index].kartaImage)
                         Column(modifier = Modifier.padding(start = 10.dp)) {
                             Text(
-                                text = kartaName.toString(),
+                                text = kartaSearchViewModel.kartaDataFromServerList.value[index].title,
                                 fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
                                 fontSize = 18.sp,
                                 color = Grey
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "ジャンル:${kartaGenre.toString()}",
+                                text = "ジャンル:${kartaSearchViewModel.kartaDataFromServerList.value[index].genre}",
                                 fontSize = 14.sp,
                                 color = Grey2
                             )
                             Text(
-                                text = kartaDescription.toString(),
+                                text = kartaSearchViewModel.kartaDataFromServerList.value[index].description,
                                 fontSize = 14.sp,
                                 color = Grey2
                             )
@@ -232,10 +152,8 @@ fun KartaDirectoryList(navController: NavController, createViewModel: CreateView
 }
 
 @Composable
-private fun kartaImage(createViewModel: CreateViewModel, index: Int) {
-    val context = LocalContext.current
-    val imageFile = File(context.filesDir, "karta/${createViewModel.kartaDirectories.value[index].name}/0.png")
-    val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+private fun KartaImage(uri: String) {
+    val painter = rememberAsyncImagePainter(model = uri)
     Box {
         Box(
             modifier = Modifier
@@ -250,7 +168,7 @@ private fun kartaImage(createViewModel: CreateViewModel, index: Int) {
                 modifier = Modifier
                     .height(98.dp)
                     .width(70.dp),
-                bitmap = bitmap.asImageBitmap(),
+                painter = painter,
                 contentDescription = null
             )
         }

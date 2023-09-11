@@ -33,9 +33,11 @@ class CreateViewModel : ViewModel() {
     //タイトルと説明文を入力するダイアログ表示
     val showInputTitleDialog = mutableStateOf(false)
     val kartaTitle = mutableStateOf("")
-    val isKartaTitleValid = mutableStateOf(false)
     val kartaDescription = mutableStateOf("")
+    val kartaGenre = mutableStateOf("")
+    val isKartaTitleValid = mutableStateOf(false)
     val isKartaDescriptionValid = mutableStateOf(false)
+    val isKartaGenreValid = mutableStateOf(false)
     //かるた削除のダイアログ
     val showKartaDeleteDialog = mutableStateOf(false)
     //インディケーター
@@ -122,6 +124,13 @@ class CreateViewModel : ViewModel() {
         }
     }
 
+    /*作成したかるたのジャンル文入力処理*/
+    fun onChangeKartaGenre(newValue: String) {
+        if (newValue.length < 21) {
+            kartaGenre.value = newValue
+        }
+    }
+
     /*作成したかるたをローカルに保存する処理*/
     fun saveKartaToLocal(context: Context, navController: NavController) {
         isKartaTitleValid.value = kartaTitle.value == ""
@@ -154,6 +163,7 @@ class CreateViewModel : ViewModel() {
                 //かるたのタイトル・説明文保存
                 editor.putString("title", kartaTitle.value)
                 editor.putString("description", kartaDescription.value)
+                editor.putString("genre", kartaGenre.value)
                 editor.putString("uid", kartaUid)
                 editor.putString("state", "ローカル")
                 editor.apply()
@@ -187,6 +197,7 @@ class CreateViewModel : ViewModel() {
                     hashMapOf(
                         "title" to sharedPreferences.getString("title", "かるたのタイトル"),
                         "description" to sharedPreferences.getString("description", "かるたの説明"),
+                        "genre" to sharedPreferences.getString("genre", "かるたのジャンル"),
                         "create" to (FirebaseAuth.getInstance().currentUser?.uid ?: "KARTAR")
                     )
                 )
@@ -269,4 +280,5 @@ class CreateViewModel : ViewModel() {
         }
         return file.delete()
     }
+
 }

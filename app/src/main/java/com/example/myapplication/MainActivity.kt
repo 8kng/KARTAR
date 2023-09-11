@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.controller.CreateViewModel
+import com.example.myapplication.controller.KartaSearchViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.view.screen.HomeScreen
 import com.example.myapplication.view.screen.auth.LoginScreen
@@ -20,6 +21,7 @@ import com.example.myapplication.view.screen.create.CreateMethodSelectScreen
 import com.example.myapplication.view.screen.create.EfudaCollectionScreen
 import com.example.myapplication.view.screen.create.KartaDetailScreen
 import com.example.myapplication.view.screen.create.OriginalCreateScreen
+import com.example.myapplication.view.screen.create.server.ServerEfudaCollectionScreen
 import com.example.myapplication.view.screen.profile.ProfileSetupScreen
 import com.example.myapplication.view.screen.profile.UserProfileScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -54,6 +56,8 @@ class MainActivity: ComponentActivity() {
             "notLoggedIn"
         }
 
+        val kartaSearchViewModel = KartaSearchViewModel()
+
         NavHost(
             navController = navController,
             startDestination = startDestination,
@@ -78,6 +82,11 @@ class MainActivity: ComponentActivity() {
                     val kartaUid = navBackStackEntry.arguments?.getString("kartaUid").toString()
                     KartaDetailScreen(navController = navController, profileViewModel = ProfileViewModel(context), kartaUid = kartaUid, createViewModel = CreateViewModel())
                 }
+                composable(Screen.ServerEfudaCollection.route) { ServerEfudaCollectionScreen(
+                    navController = navController,
+                    profileViewModel = ProfileViewModel(context),
+                    kartaSearchViewModel = kartaSearchViewModel
+                ) }
                 composable(Screen.CreateMethodSelect.route) { CreateMethodSelectScreen(navController = navController ,profileViewModel = ProfileViewModel(context)) }
                 composable(Screen.OriginalCreate.route) { OriginalCreateScreen(navController = navController) }
             }
@@ -95,5 +104,6 @@ class MainActivity: ComponentActivity() {
         object UserProfile: Screen("userProfile")
         object CreateMethodSelect: Screen("createMethodSelect")
         object OriginalCreate: Screen("originalCreate")
+        object ServerEfudaCollection: Screen("serverEfudaCollection")
     }
 }

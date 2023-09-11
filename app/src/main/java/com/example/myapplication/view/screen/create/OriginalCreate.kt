@@ -279,6 +279,14 @@ fun InputTitleDialog(createViewModel: CreateViewModel, navController: NavControl
                        placeholder = "1～20文字で入力してください",
                        label = "かるたの説明"
                    )
+                   Spacer(modifier = Modifier.height(10.dp))
+                   EditField(
+                       value = createViewModel.kartaGenre.value,
+                       onClick = { newValue -> createViewModel.onChangeKartaGenre(newValue) },
+                       isError = createViewModel.isKartaGenreValid.value,
+                       placeholder = "1～20文字で入力してください",
+                       label = "かるたのジャンル"
+                   )
                }
         },
         confirmButton = {
@@ -308,7 +316,7 @@ fun InputTitleDialog(createViewModel: CreateViewModel, navController: NavControl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditField(
+fun EditField(
     value: String,
     onClick: (String) -> Unit,
     placeholder: String = "",
@@ -340,7 +348,7 @@ private fun EditField(
             textColor = Grey,
             focusedBorderColor = DarkGreen,
             unfocusedBorderColor = LiteGreen,
-            containerColor = Yellow2
+            containerColor = ButtonContainer.copy(alpha = 0.5f)
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,

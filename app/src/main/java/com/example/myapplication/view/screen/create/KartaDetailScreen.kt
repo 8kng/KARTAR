@@ -80,6 +80,7 @@ fun KartaDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 KartaTitleText(kartaUid = kartaUid)
+                KartaGenreText(kartaUid = kartaUid)
                 KartaDescriptionText(kartaUid = kartaUid)
                 Spacer(modifier = Modifier.height(20.dp))
                 KartaDetailRow(kartaUid = kartaUid, createViewModel = createViewModel)
@@ -123,6 +124,19 @@ fun KartaTitleText(kartaUid: String) {
         fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
         fontSize = 18.sp,
         color = Grey
+    )
+}
+
+@Composable
+fun KartaGenreText(kartaUid: String) {
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences(kartaUid, Context.MODE_PRIVATE)
+    val kartaDescription = sharedPref.getString("genre", "").toString()
+    Text(
+        text = "ジャンル：${kartaDescription}",
+        fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
+        fontSize = 16.sp,
+        color = Grey2
     )
 }
 

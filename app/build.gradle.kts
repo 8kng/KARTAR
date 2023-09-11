@@ -105,4 +105,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
     //googleFont用に追記
     implementation("com.google.android.material:compose-theme-adapter-3:1.1.1")
+    //Task用に追記
+    implementation("com.google.android.gms:play-services-tasks:18.0.2")
 }
