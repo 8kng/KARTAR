@@ -10,8 +10,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.myapplication.MainActivity
 import com.example.myapplication.model.KARTAData
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
@@ -34,6 +36,8 @@ class CreateViewModel : ViewModel() {
     val isKartaTitleValid = mutableStateOf(false)
     val kartaDescription = mutableStateOf("")
     val isKartaDescriptionValid = mutableStateOf(false)
+    //かるた削除のダイアログ
+    val showKartaDeleteDialog = mutableStateOf(false)
     //インディケーター
     val showProcessIndicator = mutableStateOf(false)
 
@@ -70,7 +74,8 @@ class CreateViewModel : ViewModel() {
     }
 
     fun onChangeEfuda(newValue: Uri, index: Int) {
-        val currentList = kartaDataList.value
+        val currentList = kartaDataList.value.toMutableList()
+        /*
         if (index in currentList.indices) {
             val updateItem = currentList[index].copy(efuda = newValue.toString())
             val updateList = currentList.toMutableList().apply {
@@ -78,6 +83,15 @@ class CreateViewModel : ViewModel() {
             }
             kartaDataList.value = updateList
         }
+        * */
+        for (i in 0 until 44) {
+            if (i in currentList.indices) {
+                val updateItem = currentList[i].copy(efuda = newValue.toString())
+                currentList[i] = updateItem
+
+            }
+        }
+        kartaDataList.value = currentList
     }
 
     //かるた保存ボタンを押した時の処理
@@ -109,7 +123,7 @@ class CreateViewModel : ViewModel() {
     }
 
     /*作成したかるたをローカルに保存する処理*/
-    fun saveKartaToLocal(context: Context) {
+    fun saveKartaToLocal(context: Context, navController: NavController) {
         isKartaTitleValid.value = kartaTitle.value == ""
         isKartaDescriptionValid.value = kartaDescription.value == ""
         if (!isKartaTitleValid.value && !isKartaDescriptionValid.value) {
@@ -146,9 +160,9 @@ class CreateViewModel : ViewModel() {
                 showInputTitleDialog.value = false
                 Toast.makeText(context, "保存に成功しました", Toast.LENGTH_SHORT).show()
                 //TODO:かるた一覧画面へ移動
-                val intent = Intent(context, MainActivity::class.java)
-                context.startActivity(intent)
-                (context as Activity).finish()
+                navController.navigate("efudaCollection") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                }
             } catch (e: Exception) {
                 Toast.makeText(context, "保存に失敗しました", Toast.LENGTH_SHORT).show()
             }
@@ -165,13 +179,15 @@ class CreateViewModel : ViewModel() {
         //さーばにかるた保存
         showProcessIndicator.value = true
         try {
+            //最初にかるたのタイトル・作者などの情報を追加
             FirebaseFirestore.getInstance()
                 .collection("kartaes")
                 .document(kartaUid)
                 .set(
                     hashMapOf(
                         "title" to sharedPreferences.getString("title", "かるたのタイトル"),
-                        "description" to sharedPreferences.getString("description", "かるたの説明")
+                        "description" to sharedPreferences.getString("description", "かるたの説明"),
+                        "create" to (FirebaseAuth.getInstance().currentUser?.uid ?: "KARTAR")
                     )
                 )
             filesToUpload?.forEach { file ->
@@ -228,5 +244,29 @@ class CreateViewModel : ViewModel() {
             Log.d("ミス", e.message.toString())
             Toast.makeText(context, "ミス", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    //かるたを削除する処理
+    fun kartaDelete(navController: NavController, kartaUid: String, context: Context) {
+        //画面戦意
+        navController.popBackStack()
+        showKartaDeleteDialog.value = false
+        //かるたの絵札削除
+        val contextFilesDir = context.filesDir
+        val directoryToDelete = File(contextFilesDir, "karta/${kartaUid}")
+        deleteRecursively(directoryToDelete)
+        //かるたの読み札削除
+        val sharedPreferences = context.getSharedPreferences(kartaUid, Context.MODE_PRIVATE)
+        sharedPreferences.edit().clear().commit()
+        context.deleteSharedPreferences(kartaUid)
+    }
+
+    private fun deleteRecursively(file: File): Boolean {
+        if (file.isDirectory) {
+            file.listFiles()?.forEach {
+                deleteRecursively(it)
+            }
+        }
+        return file.delete()
     }
 }

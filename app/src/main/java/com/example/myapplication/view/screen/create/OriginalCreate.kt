@@ -88,9 +88,9 @@ fun OriginalCreateScreen(navController: NavController, profileViewModel: Profile
                 SaveKartaButton(createViewModel)
             }
         }
-    }
-    if (createViewModel.showInputTitleDialog.value) {
-        InputTitleDialog(createViewModel = createViewModel)
+        if (createViewModel.showInputTitleDialog.value) {
+            InputTitleDialog(createViewModel = createViewModel, navController)
+        }
     }
 }
 
@@ -237,7 +237,6 @@ fun YomifudaTextField(createViewModel: CreateViewModel, index: Int) {
 
 @Composable
 private fun SaveKartaButton(createViewModel: CreateViewModel) {
-    val context = LocalContext.current
     ButtonContent(
         modifier = Modifier
             .height(48.dp)
@@ -252,7 +251,7 @@ private fun SaveKartaButton(createViewModel: CreateViewModel) {
 }
 
 @Composable
-fun InputTitleDialog(createViewModel: CreateViewModel) {
+fun InputTitleDialog(createViewModel: CreateViewModel, navController: NavController) {
     val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { createViewModel.showInputTitleDialog.value = false },
@@ -284,7 +283,7 @@ fun InputTitleDialog(createViewModel: CreateViewModel) {
         },
         confirmButton = {
             TextButton(
-                onClick = { createViewModel.saveKartaToLocal(context = context) }
+                onClick = { createViewModel.saveKartaToLocal(context = context, navController = navController) }
             ) {
                 Text(
                     text = "OK",

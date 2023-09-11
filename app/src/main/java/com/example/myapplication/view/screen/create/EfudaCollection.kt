@@ -80,8 +80,11 @@ fun EfudaCollectionScreen(
             ) {
                 RowButtons(navController)
                 Spacer(modifier = Modifier.height(30.dp))
+                /*
+                TODO:現状必要ないので時間があったらやるかな～
                 SearchBox(createViewModel = createViewModel)
                 Spacer(modifier = Modifier.height(20.dp))
+                */
                 Text(
                     text = "かるた一覧",
                     fontSize = 16.sp

@@ -1,5 +1,6 @@
 package com.example.myapplication.view.screen.create
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
@@ -17,12 +18,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,10 +41,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.R
+import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.controller.CreateViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.ButtonBorder
 import com.example.myapplication.theme.ButtonContainer
+import com.example.myapplication.theme.DarkGreen
+import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
@@ -78,9 +84,13 @@ fun KartaDetailScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 KartaDetailRow(kartaUid = kartaUid, createViewModel = createViewModel)
                 Spacer(modifier = Modifier.height(50.dp))
-                if (kartaState == "サーバ") {
+                if (kartaState == "ローカル") {
                     SaverPopButton(createViewModel = createViewModel, kartaUid = kartaUid)
+                } else if (kartaState == "サーバ") {
+                    /*TODO:サーバから削除する(めんどいので後で)*/
                 }
+                Spacer(modifier = Modifier.height(10.dp))
+                KartaDeleteButton(createViewModel = createViewModel)
             }
         }
     }
@@ -94,6 +104,12 @@ fun KartaDetailScreen(
         ) {
             CircularProgressIndicator(color = LiteGreen)
         }
+    } else if (createViewModel.showKartaDeleteDialog.value) {
+        kartaDeleteDialog(
+            createViewModel = createViewModel,
+            navController = navController,
+            kartaUid = kartaUid
+        )
     }
 }
 
@@ -130,7 +146,7 @@ fun KartaDetailRow(kartaUid: String, createViewModel: CreateViewModel) {
     val sharedPref = context.getSharedPreferences(kartaUid, Context.MODE_PRIVATE)
     //画像フォルダをすべて取得
     val allFiles = dir.listFiles()
-    val imageFiles = allFiles.filter {
+    val imageFiles = allFiles?.filter {
         it.isFile && (it.name.endsWith(".png") || it.name.endsWith(".jpg") || it.name.endsWith(".jpeg"))
     }
     LazyRow(
@@ -138,14 +154,16 @@ fun KartaDetailRow(kartaUid: String, createViewModel: CreateViewModel) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         items(44) { index ->
-            val image = imageFiles[index].absoluteFile
+            val image = imageFiles?.get(index)?.absoluteFile
             val yomifuda = sharedPref.getString(index.toString(), "").toString()
             Column(
                 modifier = Modifier.padding(start = 30.dp, end = 30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SettingText(text = "絵札")
-                KartaImage(imageFile = image, createViewModel = createViewModel, index = index)
+                if (image != null) {
+                    KartaImage(imageFile = image, createViewModel = createViewModel, index = index)
+                }
                 Spacer(modifier = Modifier.height(20.dp))
                 SettingText(text = "読み札")
                 Text(
@@ -212,6 +230,54 @@ private fun SaverPopButton(createViewModel: CreateViewModel, kartaUid: String) {
         border = 4,
         fontSize = 18,
         fontWeight = FontWeight.Normal
+    )
+}
+
+@Composable
+private fun KartaDeleteButton(createViewModel: CreateViewModel) {
+    ButtonContent(
+        modifier = Modifier
+            .height(50.dp)
+            .width(250.dp),
+        onClick = { createViewModel.showKartaDeleteDialog.value = true },
+        text = "かるたを削除",
+        border = 4,
+        fontSize = 18,
+        fontWeight = FontWeight.Normal,
+        borderColor = DarkRed
+    )
+}
+
+@Composable
+private fun kartaDeleteDialog(
+    createViewModel: CreateViewModel,
+    navController: NavController,
+    kartaUid: String
+) {
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = { createViewModel.showKartaDeleteDialog.value = false },
+        title = { Text(text = "最終確認", color = Color.Red)},
+        text = {
+            Column {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(text = "かるたを削除します", color = Grey)
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "よろしいでしょうか？", color = Grey)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                createViewModel.showKartaDeleteDialog.value = false
+            }) {
+                Text(text = "NO", color = Grey2, fontSize = 16.sp)
+            }
+            TextButton(
+                onClick = { createViewModel.kartaDelete(navController = navController, kartaUid = kartaUid, context = context)}
+            ) {
+                Text(text = "OK", color = DarkGreen, fontSize = 16.sp)
+            }
+        }
     )
 }
 

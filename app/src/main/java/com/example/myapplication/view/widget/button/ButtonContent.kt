@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +31,8 @@ fun ButtonContent(
     text: String,
     border: Int = 8,
     fontSize: Int = 30,
-    fontWeight: FontWeight = FontWeight.Bold
+    fontWeight: FontWeight = FontWeight.Bold,
+    borderColor: Color = ButtonBorder
 ) {
     Surface(
         modifier = modifier,
@@ -42,7 +44,7 @@ fun ButtonContent(
                 .fillMaxSize()
                 .border(
                     width = border.dp,
-                    color = ButtonBorder,
+                    color = borderColor,
                     shape = RoundedCornerShape(3.dp)
                 )
                 .background(ButtonContainer, shape = RoundedCornerShape(3.dp)),
