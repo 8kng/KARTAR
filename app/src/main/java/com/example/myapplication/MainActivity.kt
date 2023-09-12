@@ -22,6 +22,7 @@ import com.example.myapplication.view.screen.create.EfudaCollectionScreen
 import com.example.myapplication.view.screen.create.KartaDetailScreen
 import com.example.myapplication.view.screen.create.OriginalCreateScreen
 import com.example.myapplication.view.screen.create.server.ServerEfudaCollectionScreen
+import com.example.myapplication.view.screen.create.server.ServerKartaDetail
 import com.example.myapplication.view.screen.profile.ProfileSetupScreen
 import com.example.myapplication.view.screen.profile.UserProfileScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -87,6 +88,14 @@ class MainActivity: ComponentActivity() {
                     profileViewModel = ProfileViewModel(context),
                     kartaSearchViewModel = kartaSearchViewModel
                 ) }
+                composable("${Screen.ServerKartaDetail.route}/{kartaUid}") {navBackStackEntry ->
+                    val kartaUid = navBackStackEntry.arguments?.getString("kartaUid").toString()
+                    ServerKartaDetail(
+                        navController = navController,
+                        profileViewModel = ProfileViewModel(context),
+                        kartaSearchViewModel = kartaSearchViewModel,
+                        kartaUid = kartaUid
+                ) }
                 composable(Screen.CreateMethodSelect.route) { CreateMethodSelectScreen(navController = navController ,profileViewModel = ProfileViewModel(context)) }
                 composable(Screen.OriginalCreate.route) { OriginalCreateScreen(navController = navController) }
             }
@@ -105,5 +114,6 @@ class MainActivity: ComponentActivity() {
         object CreateMethodSelect: Screen("createMethodSelect")
         object OriginalCreate: Screen("originalCreate")
         object ServerEfudaCollection: Screen("serverEfudaCollection")
+        object ServerKartaDetail: Screen("serverKartaDetail")
     }
 }

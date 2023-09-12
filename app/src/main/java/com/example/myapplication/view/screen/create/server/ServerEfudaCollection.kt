@@ -73,7 +73,7 @@ fun ServerEfudaCollectionScreen(
                 ChangeSearchTypeButton(kartaSearchViewModel = kartaSearchViewModel)
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(text = "サーバのかるた一覧", color = Grey)
-                ShowGetKartaDataColumn(kartaSearchViewModel)
+                ShowGetKartaDataColumn(navController, kartaSearchViewModel)
             }
         }
     }
@@ -104,20 +104,22 @@ fun ChangeSearchTypeButton(kartaSearchViewModel: KartaSearchViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowGetKartaDataColumn(kartaSearchViewModel: KartaSearchViewModel) {
+fun ShowGetKartaDataColumn(navController: NavController, kartaSearchViewModel: KartaSearchViewModel) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(6.dp)
     ) {
         items(kartaSearchViewModel.kartaDataFromServerList.value.size) { index ->
-            Surface(
-
-                onClick = { /*TODO:かるたタップ時に詳細を表示*/ }
-            ) {
-                Column {
+            Column {
+                Surface(
+                    onClick = { navController.navigate("serverKartaDetail/${kartaSearchViewModel.kartaDataFromServerList.value[index].kartaUid}") }
+                ) {
                     Box(
                         modifier = Modifier
-                            .background(DarkRed.copy(alpha = 0.05f), shape = RoundedCornerShape(5.dp))
+                            .background(
+                                DarkRed.copy(alpha = 0.05f),
+                                shape = RoundedCornerShape(5.dp)
+                            )
                     ) {
                         Row(
                             modifier = Modifier
@@ -147,8 +149,8 @@ fun ShowGetKartaDataColumn(kartaSearchViewModel: KartaSearchViewModel) {
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
                 }
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     }

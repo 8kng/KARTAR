@@ -4,13 +4,10 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.model.KartaDataFromServer
 import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -26,6 +23,10 @@ class KartaSearchViewModel : ViewModel(){
     val kartaDataFromServerList = mutableStateOf(
         listOf(KartaDataFromServer(kartaUid = "", create = "", title = "", description = "", genre = "", kartaImage = ""))
     )
+    //かるた詳細表示に必要な変数
+    val kartaTitle = mutableStateOf("")
+    val kartaGenre = mutableStateOf("")
+    val kartaDescription = mutableStateOf("")
 
     init {
         getAllKartaDataFromServer()
@@ -235,6 +236,18 @@ class KartaSearchViewModel : ViewModel(){
         }
         continuation.invokeOnCancellation {
             this.isCanceled
+        }
+    }
+
+    //かるたのタイトル取得
+    fun getKartaInformation(kartaUid: String) {
+        viewModelScope.launch {
+            FirebaseFirestore.getInstance().collection("kartaes").document(kartaUid).get()
+                .addOnSuccessListener { data ->
+                    kartaTitle.value = data.get("title").toString()
+                    kartaGenre.value = data.get("genre").toString()
+                    kartaDescription.value = data.get("description").toString()
+                }
         }
     }
 }
