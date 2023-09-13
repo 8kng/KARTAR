@@ -268,7 +268,7 @@ class CreateViewModel : ViewModel() {
         deleteRecursively(directoryToDelete)
         //かるたの読み札削除
         val sharedPreferences = context.getSharedPreferences(kartaUid, Context.MODE_PRIVATE)
-        sharedPreferences.edit().clear().commit()
+        sharedPreferences.edit().clear().apply()
         context.deleteSharedPreferences(kartaUid)
     }
 

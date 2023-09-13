@@ -1,15 +1,31 @@
 package com.example.myapplication.controller
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import com.bumptech.glide.Glide
+import com.example.myapplication.model.KARTAData
 import com.example.myapplication.model.KartaDataFromServer
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -27,6 +43,11 @@ class KartaSearchViewModel : ViewModel(){
     val kartaTitle = mutableStateOf("")
     val kartaGenre = mutableStateOf("")
     val kartaDescription = mutableStateOf("")
+    //取得したかるたの絵札・読み札を格納
+    val kartaDataList = mutableStateOf(listOf(KARTAData("", "")))
+    //かるたのダウンロードダイアログの表示
+    val showDownloadDialog = mutableStateOf(false)
+    val showIndicator = mutableStateOf(false)
 
     init {
         getAllKartaDataFromServer()
@@ -239,7 +260,7 @@ class KartaSearchViewModel : ViewModel(){
         }
     }
 
-    //かるたのタイトル取得
+    //選択したかるたの情報取得
     fun getKartaInformation(kartaUid: String) {
         viewModelScope.launch {
             FirebaseFirestore.getInstance().collection("kartaes").document(kartaUid).get()
@@ -248,6 +269,83 @@ class KartaSearchViewModel : ViewModel(){
                     kartaGenre.value = data.get("genre").toString()
                     kartaDescription.value = data.get("description").toString()
                 }
+        }
+    }
+
+    //選択したかるたの読み札・絵札取得
+    fun getYomifudaAndEfuda(kartaUid: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val currentList = mutableListOf<KARTAData>()
+        viewModelScope.launch {
+
+            for (index in 0 until 44) {
+                val efudaTask = firestore.collection("kartaes").document(kartaUid)
+                    .collection("efuda").document(index.toString()).get().await()
+
+                val yomifudaTask = firestore.collection("kartaes").document(kartaUid)
+                    .collection("yomifuda").document(index.toString()).get().await()
+
+                currentList.add(KARTAData(
+                    efuda = efudaTask.get("efuda").toString(),
+                    yomifuda = yomifudaTask.get("yomifuda").toString()
+                ))
+            }
+            kartaDataList.value = currentList
+        }
+    }
+
+
+    //かるたをダウンロードする処理
+    @OptIn(DelicateCoroutinesApi::class)
+    fun downloadKarta(context: Context, kartaUid: String, navController: NavController) {
+        viewModelScope.launch {
+            showDownloadDialog.value = false
+            if (kartaDataList.value.size == 44) {
+                showIndicator.value = true
+                Log.d("listtt", kartaDataList.value.toString())
+                try {
+                    val sharedPreferences = context.getSharedPreferences(kartaUid, Context.MODE_PRIVATE)
+                    val editor = sharedPreferences.edit()
+                    val dir = File(context.filesDir, "karta/$kartaUid")
+                    if (!dir.exists()) {
+                        dir.mkdirs()
+                    }
+                    editor.putString("state", "他人")
+                    editor.putString("title", kartaTitle.value)
+                    editor.putString("description", kartaDescription.value)
+                    editor.putString("genre", kartaGenre.value)
+                    editor.putString("uid", kartaUid)
+                    val jobs = mutableListOf<Job>()
+                    kartaDataList.value.forEachIndexed { index, item ->
+                        editor.putString(index.toString(), item.yomifuda)
+                        val job = launch(Dispatchers.IO) {
+                            val bitmap = Glide.with(context).asBitmap().load(item.efuda).submit().get()
+                            val file = File(dir, "$index.png")
+                            FileOutputStream(file).use { stream ->
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                Log.d("stream", "画像を保存した$index")
+                            }
+                        }
+                        jobs.add(job)
+                    }
+                    jobs.forEach { it.join() }
+                    editor.apply()
+                    withContext(Dispatchers.Main) {
+                        showDownloadDialog.value = false
+                        showIndicator.value = false
+                        navController.popBackStack()
+                        Toast.makeText(context, "保存しました", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Log.d("エラー", e.message.toString())
+                        Toast.makeText(context, "保存に失敗しました", Toast.LENGTH_SHORT).show()
+                        showIndicator.value = false
+                    }
+                }
+            } else {
+                Toast.makeText(context, "少々おまちください...", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
