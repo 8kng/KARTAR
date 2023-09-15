@@ -49,18 +49,23 @@ import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
+import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
+import com.google.firebase.appcheck.interop.BuildConfig;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -76,6 +81,10 @@ import javax.microedition.khronos.opengles.GL10;
  * Images</a>.
  */
 public class AugmentedImageActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
+  //新規変数
+  List<Pair<String, String>> pairList = new ArrayList<>();
+
+  //ARcoreにもともとあった値
   private static final String TAG = AugmentedImageActivity.class.getSimpleName();
 
   // Rendering. The Renderers are created here, and initialized when the GL surface is created.
@@ -126,14 +135,16 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
 
     installRequested = false;
 
-    //画像をファイルに保存
-    Context context = getApplicationContext();
-    try {
-      InputStream inputStream = getResources().getAssets().open("BREMEN.jpg");
-      //FileOutputStream output = new FileOutputStream(file);
-    } catch (IOException e) {
-      e.printStackTrace();
+    //画面遷移元からもらう値
+    String[] keys = getIntent().getStringArrayExtra("KEYS");
+    String[] values = getIntent().getStringArrayExtra("VALUES");
+
+    if (keys != null && values != null) {
+      for (int i = 0; i < Math.min(keys.length, values.length); i++) {
+        pairList.add(new Pair<>(keys[i], values[i]));
+      }
     }
+    Log.d("リスト", pairList.toString());
   }
 
   @Override
@@ -328,42 +339,36 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
   }
 
   private void drawAugmentedImages(
-          Frame frame, float[] projmtx, float[] viewmtx, float[] colorCorrectionRgba) throws IOException {
-    Collection<AugmentedImage> updatedAugmentedImages =
-            frame.getUpdatedTrackables(AugmentedImage.class);
+          Frame frame,
+          float[] projmtx,
+          float[] viewmtx,
+          float[] colorCorrectionRgba
+  ) throws IOException {
+    Collection<AugmentedImage> updatedAugmentedImages = frame.getUpdatedTrackables(AugmentedImage.class);
 
     // Iterate to update augmentedImageMap, remove elements we cannot draw.
     for (AugmentedImage augmentedImage : updatedAugmentedImages) {
       switch (augmentedImage.getTrackingState()) {
         case PAUSED:
-          // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
-          // but not yet tracked.
-          String text = String.format("Detected Image %d, %s", augmentedImage.getIndex(), augmentedImage.getName());
-          messageSnackbarHelper.showMessage(this, text);
+          if (BuildConfig.DEBUG) {  // Only log in debug builds
+            String text = String.format("Detected Image %d, %s", augmentedImage.getIndex(), augmentedImage.getName());
+            Log.d("ファイル", augmentedImage.getName());
+            messageSnackbarHelper.showMessage(this, text);
+          }
           break;
-
         case TRACKING:
-          // Have to switch to UI Thread to update View.
-          this.runOnUiThread(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      fitToScanView.setVisibility(View.GONE);
-                    }
-                  });
+          // Switch to UI Thread to update View using lambda.
+          this.runOnUiThread(() -> fitToScanView.setVisibility(View.GONE));
 
           // Create a new anchor for newly found images.
           if (!augmentedImageMap.containsKey(augmentedImage.getIndex())) {
             Anchor centerPoseAnchor = augmentedImage.createAnchor(augmentedImage.getCenterPose());
-            augmentedImageMap.put(
-                    augmentedImage.getIndex(), Pair.create(augmentedImage, centerPoseAnchor));
+            augmentedImageMap.put(augmentedImage.getIndex(), Pair.create(augmentedImage, centerPoseAnchor));
           }
           break;
-
         case STOPPED:
           augmentedImageMap.remove(augmentedImage.getIndex());
           break;
-
         default:
           break;
       }
@@ -372,15 +377,14 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
     // Draw all images in augmentedImageMap
     for (Pair<AugmentedImage, Anchor> pair : augmentedImageMap.values()) {
       AugmentedImage augmentedImage = pair.first;
-      augmentedImageRenderer.createOnGlThread(/*context=*/ this, augmentedImage.getName());
-      Anchor centerAnchor = augmentedImageMap.get(augmentedImage.getIndex()).second;
-      switch (augmentedImage.getTrackingState()) {
-        case TRACKING:
-          augmentedImageRenderer.draw(
-                  viewmtx, projmtx, augmentedImage, centerAnchor, colorCorrectionRgba);
-          break;
-        default:
-          break;
+
+      // Assuming createOnGlThread is a heavy operation; let's optimize by checking if already done.
+      if (!augmentedImageRenderer.isCreated(augmentedImage.getName())) {
+        augmentedImageRenderer.createOnGlThread(/*context=*/ this, augmentedImage.getName());
+      }
+      Anchor centerAnchor = pair.second;  // Reuse the value directly from the pair
+      if (augmentedImage.getTrackingState() == TrackingState.TRACKING) {
+        augmentedImageRenderer.draw(viewmtx, projmtx, augmentedImage, centerAnchor, colorCorrectionRgba);
       }
     }
   }
@@ -401,9 +405,18 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
       Log.d("url", file.getPath());
       if (file.exists()) {
         Log.d("ファイル", "存在します");
-        augmentedImageDatabase.addImage(file.getPath(), loadAugmentedImageBitmap("gajyumaru.jpg"));
+        //augmentedImageDatabase.addImage(file.getPath(), loadAugmentedImageBitmap("gajyumaru.jpg"));
       } else {
         Log.d("ファイル", "存在しない");
+      }
+
+      for (Pair<String, String> pair : pairList) {
+        String key = pair.first;
+        String value = pair.second;
+        String assetPath = "efuda/" + key + ".png";
+        Log.d("ファイル", "key:" + key + "\nvalue:" + value + "\n存在します");
+        augmentedImageDatabase.addImage(value, loadAugmentedImageBitmap(assetPath));
+        Log.d("ファイル", "success");
       }
 
       //augmentedImageDatabase.addImage("models/droidkun.png", loadAugmentedImageBitmap("default.jpg"));

@@ -1,12 +1,7 @@
 package com.example.myapplication.view.screen.profile
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,70 +36,38 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import com.example.myapplication.HomeActivity
+import com.example.myapplication.R
 import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
-import com.example.myapplication.theme.Yellow
+import com.example.myapplication.view.widget.button.ButtonContent
 import com.example.myapplication.view.widget.textField.UserNameTextField
-
-class UserProfileActivity() : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent{
-            UserProfileScreen()
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun UserProfileScreen() {
-    val context = LocalContext.current
-    val profileViewModel = ProfileViewModel()
+fun UserProfileScreen(navController: NavController, profileViewModel: ProfileViewModel) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Scaffold(
-            topBar = { TopAppBar(
-                title = {
-                        Text(
-                            text = "プロフィール",
-                            modifier = Modifier.padding(start = 20.dp)
-                        )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            val intent = Intent(context, HomeActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            context.startActivity(intent) },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBackIos,
-                            contentDescription = "Toggle password visibility",
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    navigationIconContentColor = Grey2,
-                    titleContentColor = Grey
-                )
-            ) }
+            topBar = { PopBackAppBar(navController = navController) }
         ) { innerPadding ->
             Surface(
                 modifier = Modifier
@@ -122,32 +85,59 @@ private fun UserProfileScreen() {
                     UserNameText(profileViewModel)
                     Spacer(modifier = Modifier.height(120.dp))
                     SignOutButton(profileViewModel = profileViewModel)
+                    //名前変更するダイアログ
+                    if (profileViewModel.showUserNameDialog.value) {
+                        UserNameChangeDialog(profileViewModel = profileViewModel)
+                    //サインアウト用のダイアログ
+                    } else if (profileViewModel.showSignOutDialog.value) {
+                        SignOutDialog(
+                            profileViewModel = profileViewModel,
+                            authViewModel = AuthViewModel(),
+                            navController = navController
+                        )
+                    }
                 }
-                if (profileViewModel.showUserNameDialog.value) {
-                    UserNameChangeDialog(profileViewModel = profileViewModel)
-                } else if (profileViewModel.showSignOutDialog.value) {
-                    SignOutDialog(profileViewModel = profileViewModel)
+                //サーバ処理中に表示
+                if (profileViewModel.showProcessIndicator.value) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.8f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(color = LiteGreen)
+                    }
                 }
-            }
-        }
-        //サーバ処理中に表示
-        if (profileViewModel.showProcessIndicator.value) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.8f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(color = LiteGreen)
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PopBackAppBar(navController: NavController) {
+    TopAppBar(
+        title = {},
+        navigationIcon = {
+            IconButton(
+                onClick = { navController.popBackStack() },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBackIos,
+                    contentDescription = null,
+                )
+            }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(
+            navigationIconContentColor = Grey2,
+            titleContentColor = Grey
+        )
+    )
+}
+
 @Composable
 fun UserIcon(profileViewModel: ProfileViewModel) {
     val context = LocalContext.current
-    profileViewModel.updateUserIconFromSharedPref(context)
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
@@ -158,7 +148,7 @@ fun UserIcon(profileViewModel: ProfileViewModel) {
         modifier = Modifier.fillMaxWidth()
     ) {
         AsyncImage(
-            model = profileViewModel.prefUserIcon.value,
+            model = profileViewModel.imageUri.value,
             contentScale = ContentScale.Crop,
             contentDescription = null,
             modifier = Modifier
@@ -190,16 +180,14 @@ fun UserIcon(profileViewModel: ProfileViewModel) {
 
 @Composable
 private fun UserNameText(profileViewModel: ProfileViewModel) {
-    val context = LocalContext.current
-    profileViewModel.updateUserNameFromSharedPref(context)
-
     Column {
         Box(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = profileViewModel.prefUserName.value,
+                text = profileViewModel.userName.value,
                 fontSize = 24.sp,
                 modifier = Modifier.align(Alignment.Center),
-                color = Grey
+                color = Grey,
+                fontFamily = FontFamily(Font(R.font.kiwimaru_medium))
             )
             Divider(
                 modifier = Modifier
@@ -228,31 +216,17 @@ private fun UserNameText(profileViewModel: ProfileViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignOutButton(profileViewModel: ProfileViewModel) {
-    Surface(
-        modifier = Modifier.shadow(10.dp),
-        onClick = {
-            profileViewModel.showSignOutDialog.value = true
-        }
-    ) {
-        Box(
-            Modifier
-                .border(width = 4.dp, color = LiteGreen)
-                .height(46.dp)
-                .background(Yellow)
-                .width(260.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "ログアウトする",
-                modifier = Modifier,
-                color = DarkGreen,
-                fontSize = 16.sp,
-            )
-        }
-    }
+    ButtonContent(
+        modifier = Modifier
+            .height(50.dp)
+            .width(260.dp),
+        onClick = { profileViewModel.showSignOutDialog.value = true },
+        text = "ログアウトする",
+        fontSize = 16,
+        border = 4
+    )
 }
 
 @Composable
@@ -272,9 +246,11 @@ fun UserNameChangeDialog(profileViewModel: ProfileViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
                 UserNameTextField(profileViewModel = profileViewModel)
                 Spacer(modifier = Modifier.height(16.dp))
-                TextButton(onClick = {
-                    profileViewModel.onClickUserNameDialog(context = context)
-                }) {
+                TextButton(
+                    onClick = {
+                        profileViewModel.onClickUserNameDialog(context = context)
+                    }
+                ) {
                     Text(text = "OK", color = LiteGreen, fontSize = 16.sp)
                 }
             }
@@ -283,10 +259,14 @@ fun UserNameChangeDialog(profileViewModel: ProfileViewModel) {
 }
 
 @Composable
-fun SignOutDialog(profileViewModel: ProfileViewModel, authViewModel: AuthViewModel = AuthViewModel()) {
+fun SignOutDialog(
+    profileViewModel: ProfileViewModel,
+    authViewModel: AuthViewModel,
+    navController: NavController
+    ) {
     val context = LocalContext.current
     AlertDialog(
-        onDismissRequest = { profileViewModel.showSignOutDialog.value = true },
+        onDismissRequest = { profileViewModel.showSignOutDialog.value = false },
         title = { Text(text = "最終確認", color = DarkGreen)},
         text = {
             Column {
@@ -301,7 +281,7 @@ fun SignOutDialog(profileViewModel: ProfileViewModel, authViewModel: AuthViewMod
                 Text(text = "NO", color = Grey2, fontSize = 16.sp)
             }
             TextButton(
-                onClick = { authViewModel.signOutUser((context as Activity))}
+                onClick = { authViewModel.signOutUser(navController = navController, context = context)}
             ) {
                 Text(text = "OK", color = DarkGreen, fontSize = 16.sp)
             }
@@ -312,5 +292,5 @@ fun SignOutDialog(profileViewModel: ProfileViewModel, authViewModel: AuthViewMod
 @Preview
 @Composable
 private fun UserProfileScreenPreview() {
-    UserProfileScreen()
+    UserProfileScreen(rememberNavController(), ProfileViewModel(LocalContext.current))
 }

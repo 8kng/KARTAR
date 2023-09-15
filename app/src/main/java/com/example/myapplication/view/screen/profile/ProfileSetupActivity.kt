@@ -1,10 +1,7 @@
 package com.example.myapplication.view.screen.profile
 
 import android.net.Uri
-import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,16 +12,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,36 +27,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.DarkGreen
-import com.example.myapplication.theme.Grey
-import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
-import com.example.myapplication.theme.Yellow2
-import com.example.myapplication.view.widget.button.OnValidCheckButton
+import com.example.myapplication.view.widget.button.ButtonContent
 import com.example.myapplication.view.widget.textField.UserNameTextField
 
-class ProfileSetupActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val profileViewModel = ProfileViewModel()
-        setContent {
-            ProfileSetupActivityScreen(profileViewModel)
-        }
-    }
-}
-
 @Composable
-fun ProfileSetupActivityScreen(profileViewModel: ProfileViewModel) {
-    val context = LocalContext.current
-
+fun ProfileSetupScreen(profileViewModel: ProfileViewModel, navController: NavController) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -77,12 +55,26 @@ fun ProfileSetupActivityScreen(profileViewModel: ProfileViewModel) {
                 Text(text = "次に自身のプロフィールを入力してください")
                 Spacer(modifier = Modifier.height(50.dp))
                 UserIconImage(profileViewModel = profileViewModel)
+                if (profileViewModel.isUserIconValid.value) {
+                    Text(
+                        text = "アイコンを選択してください",
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                }
                 Spacer(modifier = Modifier.height(20.dp))
                 UserNameTextField(profileViewModel = profileViewModel)
+                if (profileViewModel.isUserNameValid.value) {
+                    Text(
+                        text = "ユーザ名を入力してください",
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                }
                 Spacer(modifier = Modifier.height(140.dp))
-                OnValidCheckButton { profileViewModel.onValidCheck(context) }
+                ProfileSaveButton(profileViewModel = profileViewModel, navController = navController)
             }
-            //サーバ処理中に表示
+            //サーバ処理中に表示するインディケーター
             if (profileViewModel.showProcessIndicator.value) {
                 Box(
                     modifier = Modifier
@@ -97,24 +89,17 @@ fun ProfileSetupActivityScreen(profileViewModel: ProfileViewModel) {
     }
 }
 
-@Preview
-@Composable
-fun ProfileSetupActivityScreenPreview() {
-    ProfileSetupActivityScreen(ProfileViewModel())
-}
-
 @Composable
 fun UserIconImage(profileViewModel: ProfileViewModel) {
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            profileViewModel.imageUri.value = uri
-        }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        profileViewModel.localImageUri.value = uri
+    }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(modifier = Modifier.height(10.dp))
-        if (profileViewModel.imageUri.value != null) {
+        if (profileViewModel.localImageUri.value != null) {
             Image(
-                painter = rememberAsyncImagePainter(profileViewModel.imageUri.value),
+                painter = rememberAsyncImagePainter(profileViewModel.localImageUri.value),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -143,9 +128,31 @@ fun UserIconImage(profileViewModel: ProfileViewModel) {
         ) {
             Text(
                 text = "アイコンをえらぶ",
-                color = LiteGreen,
+                color = DarkGreen,
                 fontSize = 16.sp,
             )
         }
     }
+}
+
+@Composable
+private fun ProfileSaveButton(profileViewModel: ProfileViewModel, navController: NavController) {
+    val context = LocalContext.current
+    ButtonContent(
+        modifier = Modifier
+            .height(50.dp)
+            .width(250.dp),
+        onClick = { profileViewModel.registerUserInformation(context, navController) },
+        text = "OK",
+        border = 4,
+        fontSize = 18,
+        fontWeight = FontWeight.Normal
+    )
+}
+
+@Preview
+@Composable
+fun ProfileSetupScreenPreview() {
+    val context = LocalContext.current
+    ProfileSetupScreen(ProfileViewModel(context), rememberNavController())
 }

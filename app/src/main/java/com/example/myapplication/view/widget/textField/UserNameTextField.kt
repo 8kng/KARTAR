@@ -11,6 +11,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.theme.ButtonContainer
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
@@ -22,11 +23,7 @@ import com.example.myapplication.theme.Yellow2
 fun UserNameTextField(profileViewModel: ProfileViewModel) {
     OutlinedTextField(
         value = profileViewModel.userName.value,
-        onValueChange = { newValue ->
-            if (newValue.length  < 17) {
-                profileViewModel.onUserNameChanged(newValue)
-            }
-        },
+        onValueChange = { newValue -> profileViewModel.onUserNameChanged(newValue) },
         singleLine = true,
         placeholder = {
             Text(
@@ -47,7 +44,7 @@ fun UserNameTextField(profileViewModel: ProfileViewModel) {
             textColor = Grey,
             focusedBorderColor = DarkGreen,
             unfocusedBorderColor = LiteGreen,
-            containerColor = Yellow2
+            containerColor = ButtonContainer.copy(alpha = 0.5f)
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,

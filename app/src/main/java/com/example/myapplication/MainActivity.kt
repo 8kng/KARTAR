@@ -1,46 +1,136 @@
 package com.example.myapplication
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import com.example.myapplication.databinding.ActivityMainBinding
-import com.example.myapplication.view.screen.auth.LoginActivity
-import com.example.myapplication.view.screen.auth.NotLoggedInActivity
-import com.example.myapplication.view.screen.profile.ProfileSetupActivity
-import com.google.firebase.FirebaseApp
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.controller.AuthViewModel
+import com.example.myapplication.controller.CreateViewModel
+import com.example.myapplication.controller.KartaSearchViewModel
+import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.controller.RoomListViewModel
+import com.example.myapplication.view.screen.HomeScreen
+import com.example.myapplication.view.screen.auth.LoginScreen
+import com.example.myapplication.view.screen.auth.NotLoggedInScreen
+import com.example.myapplication.view.screen.auth.SignInScreen
+import com.example.myapplication.view.screen.create.CreateMethodSelectScreen
+import com.example.myapplication.view.screen.create.EfudaCollectionScreen
+import com.example.myapplication.view.screen.create.KartaDetailScreen
+import com.example.myapplication.view.screen.create.OriginalCreateScreen
+import com.example.myapplication.view.screen.create.server.ServerEfudaCollectionScreen
+import com.example.myapplication.view.screen.create.server.ServerKartaDetail
+import com.example.myapplication.view.screen.playKarta.RoomListScreen
+import com.example.myapplication.view.screen.playKarta.solo.SoloSetupScreen
+import com.example.myapplication.view.screen.profile.ProfileSetupScreen
+import com.example.myapplication.view.screen.profile.UserProfileScreen
 import com.google.firebase.auth.FirebaseAuth
 
-class MainActivity : AppCompatActivity() {
+class MainActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //Firebaseの初期化
-        FirebaseApp.initializeApp(this)
 
+        setContent {
+            MyAppScreen()
+        }
     }
 
-    override fun onStart() {
-        super.onStart()
-
+    @Composable
+    fun MyAppScreen() {
+        val navController = rememberNavController()
         val auth = FirebaseAuth.getInstance()
         val user = auth.currentUser
         val sharedPref = getSharedPreferences("UserInformation", Context.MODE_PRIVATE)
         val userName = sharedPref.getString("UserName", "")
+        val context = LocalContext.current
 
-        if (user != null) {
-            if (userName == "") {  //ユーザ情報が未定の場合
-                val intent = Intent(applicationContext, ProfileSetupActivity::class.java)
-                startActivity(intent)
-                finish()
-            } else {  //ログイン・ユーザ情報が保存されている場合
-                val intent = Intent(applicationContext, HomeActivity::class.java)
-                startActivity(intent)
-                finish()
+        //最初の画面遷移先を指定する変数
+        val startDestination: String =
+            if (user != null) {
+                if (userName == "") {  //ユーザ情報が未定の場合
+                    "profileSetup"
+                } else {  //ログイン・ユーザ情報が保存されている場合
+                    "home"
             }
-        } else {
-            val intent = Intent(applicationContext, NotLoggedInActivity::class.java)
-            startActivity(intent)
-            finish()
+        } else {  //ログインできていない場合
+            "notLoggedIn"
         }
+
+        val kartaSearchViewModel = KartaSearchViewModel()
+
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+            builder = {
+                composable(Screen.Home.route) { HomeScreen(navController = navController, profileViewModel = ProfileViewModel(context)) }
+                //Auth関連のScreen
+                composable(Screen.NotLoggedIn.route) { NotLoggedInScreen(navController = navController) }
+                composable(Screen.Signin.route) { SignInScreen(navController, AuthViewModel()) }
+                composable(Screen.Login.route) { LoginScreen(navController, authViewModel = AuthViewModel()) }
+                //profile関連のScreen
+                composable(Screen.ProfileSetup.route) { ProfileSetupScreen(profileViewModel = ProfileViewModel(context), navController) }
+                composable(Screen.UserProfile.route) { UserProfileScreen(navController = navController, profileViewModel = ProfileViewModel(context)) }
+                //create関連のScreen
+                composable(Screen.EfudaCollection.route) {
+                    EfudaCollectionScreen(
+                        navController,
+                        profileViewModel = ProfileViewModel(context),
+                        createViewModel = CreateViewModel()
+                    )
+                }
+                composable("${Screen.KartaDetail.route}/{kartaUid}") { navBackStackEntry ->
+                    val kartaUid = navBackStackEntry.arguments?.getString("kartaUid").toString()
+                    KartaDetailScreen(navController = navController, profileViewModel = ProfileViewModel(context), kartaUid = kartaUid, createViewModel = CreateViewModel())
+                }
+                composable(Screen.ServerEfudaCollection.route) { ServerEfudaCollectionScreen(
+                    navController = navController,
+                    profileViewModel = ProfileViewModel(context),
+                    kartaSearchViewModel = kartaSearchViewModel
+                ) }
+                composable("${Screen.ServerKartaDetail.route}/{kartaUid}") {navBackStackEntry ->
+                    val kartaUid = navBackStackEntry.arguments?.getString("kartaUid").toString()
+                    ServerKartaDetail(
+                        navController = navController,
+                        profileViewModel = ProfileViewModel(context),
+                        kartaSearchViewModel = kartaSearchViewModel,
+                        kartaUid = kartaUid
+                ) }
+                composable(Screen.CreateMethodSelect.route) { CreateMethodSelectScreen(navController = navController ,profileViewModel = ProfileViewModel(context)) }
+                composable(Screen.OriginalCreate.route) { OriginalCreateScreen(navController = navController) }
+                //room関連のscreen
+                composable(Screen.RoomList.route) { RoomListScreen(
+                    navController = navController,
+                    profileViewModel = ProfileViewModel(context),
+                    roomListViewModel = RoomListViewModel()
+                ) }
+                //ソロプレイ用のScreen
+                composable(Screen.SoloSetup.route) { SoloSetupScreen(
+                    navController = navController,
+                    profileViewModel = ProfileViewModel(context),
+                    roomListViewModel = RoomListViewModel()
+                ) }
+            }
+        )
+    }
+
+    sealed class Screen(val route: String) {
+        object Home: Screen("home")
+        object NotLoggedIn: Screen("notLoggedIn")
+        object Signin: Screen("signin")
+        object Login: Screen("login")
+        object ProfileSetup: Screen("profileSetup")
+        object EfudaCollection: Screen("efudaCollection")
+        object KartaDetail: Screen("kartaDetail")
+        object UserProfile: Screen("userProfile")
+        object CreateMethodSelect: Screen("createMethodSelect")
+        object OriginalCreate: Screen("originalCreate")
+        object ServerEfudaCollection: Screen("serverEfudaCollection")
+        object ServerKartaDetail: Screen("serverKartaDetail")
+        object RoomList: Screen("roomList")
+        object SoloSetup: Screen("soloSetup")
     }
 }
