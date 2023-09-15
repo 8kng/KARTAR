@@ -36,7 +36,7 @@ fun HomeScreen(navController: NavController, profileViewModel: ProfileViewModel)
                 navController = navController
             )
             Spacer(modifier = Modifier.height(80.dp))
-            PlayKartaButton()
+            PlayKartaButton(navController = navController)
             Spacer(modifier = Modifier.height(70.dp))
             EfudaButton(navController)
         }
@@ -44,9 +44,9 @@ fun HomeScreen(navController: NavController, profileViewModel: ProfileViewModel)
 }
 
 @Composable
-fun PlayKartaButton() {
+fun PlayKartaButton(navController: NavController) {
     ButtonContent(
-        onClick = { /*TODO:かるたで遊ぶ画面移動*/ },
+        onClick = { navController.navigate("roomList") },
         text = "かるたで\nあそぶ",
         modifier = Modifier
             .height(150.dp)

@@ -144,11 +144,6 @@ public class ObjectRenderer {
     compileAndLoadShaderProgram(context);
 
     File imgFile = new File(diffuseTextureAssetName);
-    if (imgFile.exists()) {
-      Log.d("ファイル", "存在する!!!");
-    } else  {
-      Log.d("ファイル", "存在しない!!!");
-    }
     FileInputStream fis = new FileInputStream(imgFile);
     Bitmap texBitmap = BitmapFactory.decodeStream(fis);
     // Read the texture.

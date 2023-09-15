@@ -13,6 +13,7 @@ import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.controller.CreateViewModel
 import com.example.myapplication.controller.KartaSearchViewModel
 import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.controller.RoomListViewModel
 import com.example.myapplication.view.screen.HomeScreen
 import com.example.myapplication.view.screen.auth.LoginScreen
 import com.example.myapplication.view.screen.auth.NotLoggedInScreen
@@ -23,6 +24,8 @@ import com.example.myapplication.view.screen.create.KartaDetailScreen
 import com.example.myapplication.view.screen.create.OriginalCreateScreen
 import com.example.myapplication.view.screen.create.server.ServerEfudaCollectionScreen
 import com.example.myapplication.view.screen.create.server.ServerKartaDetail
+import com.example.myapplication.view.screen.playKarta.RoomListScreen
+import com.example.myapplication.view.screen.playKarta.solo.SoloSetupScreen
 import com.example.myapplication.view.screen.profile.ProfileSetupScreen
 import com.example.myapplication.view.screen.profile.UserProfileScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -98,6 +101,18 @@ class MainActivity: ComponentActivity() {
                 ) }
                 composable(Screen.CreateMethodSelect.route) { CreateMethodSelectScreen(navController = navController ,profileViewModel = ProfileViewModel(context)) }
                 composable(Screen.OriginalCreate.route) { OriginalCreateScreen(navController = navController) }
+                //room関連のscreen
+                composable(Screen.RoomList.route) { RoomListScreen(
+                    navController = navController,
+                    profileViewModel = ProfileViewModel(context),
+                    roomListViewModel = RoomListViewModel()
+                ) }
+                //ソロプレイ用のScreen
+                composable(Screen.SoloSetup.route) { SoloSetupScreen(
+                    navController = navController,
+                    profileViewModel = ProfileViewModel(context),
+                    roomListViewModel = RoomListViewModel()
+                ) }
             }
         )
     }
@@ -115,5 +130,7 @@ class MainActivity: ComponentActivity() {
         object OriginalCreate: Screen("originalCreate")
         object ServerEfudaCollection: Screen("serverEfudaCollection")
         object ServerKartaDetail: Screen("serverKartaDetail")
+        object RoomList: Screen("roomList")
+        object SoloSetup: Screen("soloSetup")
     }
 }

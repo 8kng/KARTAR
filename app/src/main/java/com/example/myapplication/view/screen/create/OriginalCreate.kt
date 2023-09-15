@@ -113,6 +113,8 @@ fun KARTALazyRow(createViewModel: CreateViewModel) {
                 Box {
                     Box(
                         modifier = Modifier
+                            .width(200.dp)
+                            .height(280.dp)
                             .border(
                                 width = 10.dp,
                                 color = ButtonBorder,
@@ -200,7 +202,7 @@ fun EfudaImageSelect(createViewModel: CreateViewModel, index: Int) {
                 Image(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .width(280.dp),
+                        .width(200.dp),
                     painter = rememberAsyncImagePainter(createViewModel.kartaDataList.value[index].efuda.toUri()),
                     contentDescription = null,
                     contentScale = ContentScale.Crop

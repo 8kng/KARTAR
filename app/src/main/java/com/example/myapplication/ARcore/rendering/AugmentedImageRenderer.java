@@ -23,9 +23,12 @@ import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.Pose;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Renders an augmented image. */
 public class AugmentedImageRenderer {
+  private Set<String> createdImages = new HashSet<>();
   private static final String TAG = "AugmentedImageRenderer";
 
   private static final float TINT_INTENSITY = 0.1f;
@@ -49,6 +52,11 @@ public class AugmentedImageRenderer {
     );
     imageFrameUpperRight.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
     imageFrameUpperRight.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
+    createdImages.add(textureName);
+  }
+
+  public boolean isCreated(String imageName) {
+    return createdImages.contains(imageName);
   }
 
   public void draw(
