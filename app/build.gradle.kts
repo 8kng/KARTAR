@@ -107,4 +107,7 @@ dependencies {
     implementation("com.google.android.material:compose-theme-adapter-3:1.1.1")
     //Task用に追記
     implementation("com.google.android.gms:play-services-tasks:18.0.2")
+    //realtime
+    implementation("androidx.compose.runtime:runtime-livedata:1.5.1")
+    implementation("com.google.firebase:firebase-database:20.2.2")
 }

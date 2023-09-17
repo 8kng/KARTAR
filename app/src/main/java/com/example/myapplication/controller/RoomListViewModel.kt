@@ -8,11 +8,18 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.AugmentedImageActivity
+import com.example.myapplication.model.RoomData
+import com.example.myapplication.model.realTimeDatabase.RoomInfo
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Session
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.io.File
 import java.io.IOException
 
@@ -24,6 +31,12 @@ class RoomListViewModel : ViewModel() {
     //遊ぶかるたの選択
     val playKartaUid = mutableStateOf("")
     val playKartaTitle = mutableStateOf("")
+    //ルームリスト
+    val roomList = mutableStateOf<List<RoomData>>(listOf())
+
+    init {
+        getAllRoom()
+    }
 
     //検索入力処理
     fun onSearchBoxChange(newString: String) {
@@ -38,6 +51,41 @@ class RoomListViewModel : ViewModel() {
         if (dir.listFiles() != null) {
             kartaDirectories.value = dir.listFiles().filter { it.isDirectory }
         }
+    }
+
+    //ルーム一覧取得
+    private fun getAllRoom() {
+        val database = FirebaseDatabase.getInstance().reference
+        val roomRef = database.child("room")
+
+        roomRef.addValueEventListener(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d("roomList", "start")
+                val currentList = mutableListOf<RoomData>()
+                for (roomSnapshot in snapshot.children) {
+                    Log.d("roomList", roomSnapshot.key.toString())
+                    val roomInfo = roomSnapshot.child("roomInfo").getValue(RoomInfo::class.java)
+                    if (roomInfo?.kind == "public") {
+                        currentList.add(
+                            RoomData(
+                                name = roomInfo.roomName,
+                                count = roomInfo.count,
+                                isStart = roomInfo.isStart,
+                                kind = roomInfo.kind
+                            )
+                        )
+                    }
+                }
+                roomList.value = currentList
+                Log.d("roomList", roomList.value.toString())
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseError", "Error fetching data: ${error.message}")
+                Log.d("roomList", "e:${error.message}")
+            }
+        })
+
     }
 
     //ソロプレイ開始
