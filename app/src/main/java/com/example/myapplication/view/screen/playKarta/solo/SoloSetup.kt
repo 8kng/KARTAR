@@ -197,6 +197,6 @@ private fun SoloSetupPreview() {
     SoloSetupScreen(
         navController = rememberNavController(),
         profileViewModel = ProfileViewModel(LocalContext.current),
-        roomListViewModel = RoomListViewModel()
+        roomListViewModel = RoomListViewModel(context = LocalContext.current)
     )
 }

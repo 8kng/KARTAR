@@ -23,7 +23,7 @@ import com.google.firebase.database.ValueEventListener
 import java.io.File
 import java.io.IOException
 
-class RoomListViewModel : ViewModel() {
+class RoomListViewModel(context: Context) : ViewModel() {
     //検索ボックス用の変数
     val searchKeyword = mutableStateOf("")
     //かるたを保存しているディレクトリー一覧
@@ -60,10 +60,8 @@ class RoomListViewModel : ViewModel() {
 
         roomRef.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                Log.d("roomList", "start")
                 val currentList = mutableListOf<RoomData>()
                 for (roomSnapshot in snapshot.children) {
-                    Log.d("roomList", roomSnapshot.key.toString())
                     val roomInfo = roomSnapshot.child("roomInfo").getValue(RoomInfo::class.java)
                     if (roomInfo?.kind == "public") {
                         currentList.add(
@@ -85,7 +83,6 @@ class RoomListViewModel : ViewModel() {
                 Log.d("roomList", "e:${error.message}")
             }
         })
-
     }
 
     //ソロプレイ開始
