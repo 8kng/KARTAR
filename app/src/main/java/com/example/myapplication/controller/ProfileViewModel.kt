@@ -111,36 +111,38 @@ class ProfileViewModel(context: Context) : ViewModel(){
         )
         val editor = sharedPref.edit()
         val uid = FirebaseAuth.getInstance().currentUser?.uid.toString()
-        val storageRef = FirebaseStorage.getInstance().reference
-        val imageRef = storageRef.child("iconImages/${uid}")
-        viewModelScope.launch {
-            showProcessIndicator.value = true
-            try {
-                //アイコン画像をstorageに保存
-                val uploadTask = imageUri.value?.let { imageRef.putFile(it) }
-                uploadTask?.addOnSuccessListener {
-                    imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                        //サーバに情報を書き込み
-                        FirebaseFirestore.getInstance()
-                            .collection("users")
-                            .document(uid)
-                            .update("iconImage", downloadUri)
-                        //ローカルに情報を書き込み
-                        editor.putString(context.getString(R.string.imageIcon), downloadUri.toString())
-                        editor.apply()
-                        updateUserIconFromSharedPref(context)
-                        showProcessIndicator.value = false
-                    }.addOnFailureListener {
-                        Toast.makeText(context, "更新に失敗しました...ネットワーク環境を確かめてください", Toast.LENGTH_SHORT).show()
+        if (FirebaseAuth.getInstance().currentUser?.uid != null) {
+            val storageRef = FirebaseStorage.getInstance().reference
+            val imageRef = storageRef.child("iconImages/${uid}")
+            viewModelScope.launch {
+                showProcessIndicator.value = true
+                try {
+                    //アイコン画像をstorageに保存
+                    val uploadTask = imageUri.value?.let { imageRef.putFile(it) }
+                    uploadTask?.addOnSuccessListener {
+                        imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                            //サーバに情報を書き込み
+                            FirebaseFirestore.getInstance()
+                                .collection("users")
+                                .document(uid)
+                                .update("iconImage", downloadUri)
+                            //ローカルに情報を書き込み
+                            editor.putString(context.getString(R.string.imageIcon), downloadUri.toString())
+                            editor.apply()
+                            updateUserIconFromSharedPref(context)
+                            showProcessIndicator.value = false
+                        }.addOnFailureListener {
+                            Toast.makeText(context, "更新に失敗しました...ネットワーク環境を確かめてください", Toast.LENGTH_SHORT).show()
+                            showProcessIndicator.value = false
+                        }
+                    }?.addOnFailureListener{
+                        Toast.makeText(context, "更新に失敗しました...", Toast.LENGTH_SHORT).show()
                         showProcessIndicator.value = false
                     }
-                }?.addOnFailureListener{
-                    Toast.makeText(context, "更新に失敗しました...", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Log.d("e", "エラーでたよ～")
                     showProcessIndicator.value = false
                 }
-            } catch (e: Exception) {
-                Log.d("e", "エラーでたよ～")
-                showProcessIndicator.value = false
             }
         }
     }
@@ -155,23 +157,25 @@ class ProfileViewModel(context: Context) : ViewModel(){
             showUserNameDialog.value = false
         } else {
             val uid = FirebaseAuth.getInstance().currentUser?.uid.toString()
-            viewModelScope.launch {
-                try {
-                    //サーバに情報を書き込み
-                    FirebaseFirestore.getInstance()
-                        .collection("users")
-                        .document(uid)
-                        .update("userName", userName.value)
-                    //ローカルに情報を書き込み
-                    editor.putString(context.getString(R.string.UserName), userName.value)
-                    editor.apply()
-                    delay(1000)
-                    updateUserNameFromSharedPref(context)
-                    showUserNameDialog.value = false
-                    Toast.makeText(context, "名前を変更しました", Toast.LENGTH_SHORT).show()
-                } catch (e: Exception) {
-                    Log.d("e", "エラーでたよ～")
-                    showUserNameDialog.value = false
+            if (uid != null) {
+                viewModelScope.launch {
+                    try {
+                        //サーバに情報を書き込み
+                        FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(uid)
+                            .update("userName", userName.value)
+                        //ローカルに情報を書き込み
+                        editor.putString(context.getString(R.string.UserName), userName.value)
+                        editor.apply()
+                        delay(1000)
+                        updateUserNameFromSharedPref(context)
+                        showUserNameDialog.value = false
+                        Toast.makeText(context, "名前を変更しました", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Log.d("e", "エラーでたよ～")
+                        showUserNameDialog.value = false
+                    }
                 }
             }
         }

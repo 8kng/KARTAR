@@ -58,7 +58,7 @@ class CreateViewModel : ViewModel() {
     //かるたディレクトリー取得
     fun getKartaDirectories(context: Context) {
         val dir = File(context.filesDir, "karta")
-        kartaDirectories.value = dir.listFiles().filter { it.isDirectory }
+        kartaDirectories.value = dir.listFiles()?.filter { it.isDirectory } ?: listOf()
     }
 
     //読み札の入力処理
@@ -169,7 +169,6 @@ class CreateViewModel : ViewModel() {
                 editor.apply()
                 showInputTitleDialog.value = false
                 Toast.makeText(context, "保存に成功しました", Toast.LENGTH_SHORT).show()
-                //TODO:かるた一覧画面へ移動
                 navController.navigate("efudaCollection") {
                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
                 }
@@ -190,64 +189,66 @@ class CreateViewModel : ViewModel() {
         showProcessIndicator.value = true
         try {
             //最初にかるたのタイトル・作者などの情報を追加
-            FirebaseFirestore.getInstance()
-                .collection("kartaes")
-                .document(kartaUid)
-                .set(
-                    hashMapOf(
-                        "title" to sharedPreferences.getString("title", "かるたのタイトル"),
-                        "description" to sharedPreferences.getString("description", "かるたの説明"),
-                        "genre" to sharedPreferences.getString("genre", "かるたのジャンル"),
-                        "create" to (FirebaseAuth.getInstance().currentUser?.uid ?: "KARTAR")
+            if (FirebaseAuth.getInstance().currentUser?.uid != null) {
+                FirebaseFirestore.getInstance()
+                    .collection("kartaes")
+                    .document(kartaUid)
+                    .set(
+                        hashMapOf(
+                            "title" to sharedPreferences.getString("title", "かるたのタイトル"),
+                            "description" to sharedPreferences.getString("description", "かるたの説明"),
+                            "genre" to sharedPreferences.getString("genre", "かるたのジャンル"),
+                            "create" to (FirebaseAuth.getInstance().currentUser?.uid ?: "KARTAR")
+                        )
                     )
-                )
-            filesToUpload?.forEach { file ->
-                if (file.extension in listOf("jpg", "jpeg", "png")) {
-                    val fileUri = Uri.fromFile(file)
-                    val storageRef = FirebaseStorage.getInstance().reference
-                    val imageRef = storageRef.child("karta/${kartaUid}/${file.name}")
-                    val uploadTask = imageRef.putFile(fileUri)
-                    uploadTask.addOnSuccessListener {
-                        imageRef.downloadUrl.addOnSuccessListener {downloadUri ->
-                            Log.d("fileName", "実行:${file.nameWithoutExtension}:count${successCount}")
-                            //読み札の保存
-                            FirebaseFirestore.getInstance()
-                                .collection("kartaes")
-                                .document(kartaUid)
-                                .collection("yomifuda")
-                                .document(file.nameWithoutExtension)
-                                .set(hashMapOf(
-                                    "yomifuda" to sharedPreferences.getString(file.nameWithoutExtension, "よみふだ"))
-                                )
-                            FirebaseFirestore.getInstance()
-                                .collection("kartaes")
-                                .document(kartaUid)
-                                .collection("efuda")
-                                .document(file.nameWithoutExtension)
-                                .set(
-                                    hashMapOf("efuda" to downloadUri.toString())
-                                )
-                                .addOnSuccessListener {
-                                    Log.d("fileName", "success:${file.name}:count${successCount}")
-                                    successCount++
-                                    if (successCount == totalFiles) {
-                                        val editor = sharedPreferences.edit()
-                                        editor.putString("state", "サーバ")
-                                        editor.apply()
-                                        Toast.makeText(context, "サーバに登録しました", Toast.LENGTH_SHORT).show()
+                filesToUpload?.forEach { file ->
+                    if (file.extension in listOf("jpg", "jpeg", "png")) {
+                        val fileUri = Uri.fromFile(file)
+                        val storageRef = FirebaseStorage.getInstance().reference
+                        val imageRef = storageRef.child("karta/${kartaUid}/${file.name}")
+                        val uploadTask = imageRef.putFile(fileUri)
+                        uploadTask.addOnSuccessListener {
+                            imageRef.downloadUrl.addOnSuccessListener {downloadUri ->
+                                Log.d("fileName", "実行:${file.nameWithoutExtension}:count${successCount}")
+                                //読み札の保存
+                                FirebaseFirestore.getInstance()
+                                    .collection("kartaes")
+                                    .document(kartaUid)
+                                    .collection("yomifuda")
+                                    .document(file.nameWithoutExtension)
+                                    .set(hashMapOf(
+                                        "yomifuda" to sharedPreferences.getString(file.nameWithoutExtension, "よみふだ"))
+                                    )
+                                FirebaseFirestore.getInstance()
+                                    .collection("kartaes")
+                                    .document(kartaUid)
+                                    .collection("efuda")
+                                    .document(file.nameWithoutExtension)
+                                    .set(
+                                        hashMapOf("efuda" to downloadUri.toString())
+                                    )
+                                    .addOnSuccessListener {
+                                        Log.d("fileName", "success:${file.name}:count${successCount}")
+                                        successCount++
+                                        if (successCount == totalFiles) {
+                                            val editor = sharedPreferences.edit()
+                                            editor.putString("state", "サーバ")
+                                            editor.apply()
+                                            Toast.makeText(context, "サーバに登録しました", Toast.LENGTH_SHORT).show()
+                                            showProcessIndicator.value = false
+                                        }
+                                    }.addOnFailureListener {
+                                        Toast.makeText(context, "サーバに登録失敗しました...", Toast.LENGTH_SHORT).show()
                                         showProcessIndicator.value = false
+                                        Log.d("fileName", "失敗:${file.name}:count${successCount}")
+                                        return@addOnFailureListener
                                     }
-                                }.addOnFailureListener {
-                                    Toast.makeText(context, "サーバに登録失敗しました...", Toast.LENGTH_SHORT).show()
-                                    showProcessIndicator.value = false
-                                    Log.d("fileName", "失敗:${file.name}:count${successCount}")
-                                    return@addOnFailureListener
-                                }
+                            }
+                        }.addOnFailureListener{
+                            Toast.makeText(context, "サーバに登録失敗しました...", Toast.LENGTH_SHORT).show()
+                            showProcessIndicator.value = false
+                            return@addOnFailureListener
                         }
-                    }.addOnFailureListener{
-                        Toast.makeText(context, "サーバに登録失敗しました...", Toast.LENGTH_SHORT).show()
-                        showProcessIndicator.value = false
-                        return@addOnFailureListener
                     }
                 }
             }
