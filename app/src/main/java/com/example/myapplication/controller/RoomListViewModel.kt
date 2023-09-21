@@ -11,15 +11,19 @@ import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.myapplication.AugmentedImageActivity
 import com.example.myapplication.model.RoomData
 import com.example.myapplication.model.realTimeDatabase.RoomInfo
 import com.google.ar.core.AugmentedImageDatabase
 import com.google.ar.core.Session
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 
@@ -69,7 +73,8 @@ class RoomListViewModel(context: Context) : ViewModel() {
                                 name = roomInfo.roomName,
                                 count = roomInfo.count,
                                 isStart = roomInfo.isStart,
-                                kind = roomInfo.kind
+                                kind = roomInfo.kind,
+                                roomUid = roomSnapshot.key.toString()
                             )
                         )
                     }
@@ -83,6 +88,35 @@ class RoomListViewModel(context: Context) : ViewModel() {
                 Log.d("roomList", "e:${error.message}")
             }
         })
+    }
+
+    fun enterRoom(index: Int, navController: NavController, roomCreateViewModel: RoomCreateViewModel) {
+        viewModelScope.launch {
+            try {
+                val database = FirebaseDatabase.getInstance()
+                val createRoom = database.getReference("room").child(roomList.value[index].roomUid)
+                //人数の追加
+                createRoom.child("roomInfo").child("count").get()
+                    .addOnSuccessListener { snapshot ->
+                        val currentValue: Int? = snapshot.getValue(Int::class.java)
+                        if (currentValue != null) {
+                            createRoom.child("roomInfo").child("count").setValue(currentValue + 1)
+                            //ポイントの初期化
+                            val updateMap = HashMap<String, Any>()
+                            updateMap[FirebaseAuth.getInstance().currentUser?.uid.toString()] = 0
+                            createRoom.child("point").updateChildren(updateMap)
+                            //参加者登録
+                            val playerUpdateMap = HashMap<String, Any>()
+                            playerUpdateMap[FirebaseAuth.getInstance().currentUser?.uid.toString()] = "enter"
+                            createRoom.child("player").updateChildren(playerUpdateMap)
+                            roomCreateViewModel.enterRoom.value = roomList.value[index].roomUid
+                            roomCreateViewModel.roomInformation(navController)
+                        }
+                    }
+            } catch (e:Exception) {
+                Log.d("エラー", e.message.toString())
+            }
+        }
     }
 
     //ソロプレイ開始

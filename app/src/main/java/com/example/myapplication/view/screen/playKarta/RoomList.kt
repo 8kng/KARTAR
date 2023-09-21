@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
 import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.controller.RoomCreateViewModel
 import com.example.myapplication.controller.RoomListViewModel
 import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
@@ -44,7 +45,8 @@ import com.example.myapplication.view.widget.button.ButtonContent
 fun RoomListScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
-    roomListViewModel: RoomListViewModel
+    roomListViewModel: RoomListViewModel,
+    roomCreateViewModel: RoomCreateViewModel
 ) {
     Scaffold(
         topBar = { AppBar(navController, profileViewModel) }
@@ -64,7 +66,7 @@ fun RoomListScreen(
                 RoomSearchBox(roomListViewModel = roomListViewModel)
                 Spacer(modifier = Modifier.height(30.dp))
                 Text(text = "部屋一覧")
-                RoomListColumn(roomListViewModel = roomListViewModel)
+                RoomListColumn(roomListViewModel = roomListViewModel, navController, roomCreateViewModel)
                 Spacer(modifier = Modifier.height(60.dp))
                 SoloPlayButton(navController = navController)
             }
@@ -124,7 +126,7 @@ fun RoomSearchBox(roomListViewModel: RoomListViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoomListColumn(roomListViewModel: RoomListViewModel){
+fun RoomListColumn(roomListViewModel: RoomListViewModel, navController: NavController, roomCreateViewModel: RoomCreateViewModel){
     LazyColumn(
         modifier = Modifier
             .padding(start = 30.dp, end = 30.dp)
@@ -132,7 +134,7 @@ fun RoomListColumn(roomListViewModel: RoomListViewModel){
     ) {
         items(roomListViewModel.roomList.value.size) { index ->
             Surface(
-                onClick = { /*TODO:ルームにえんたー*/ }
+                onClick = { roomListViewModel.enterRoom(index, navController, roomCreateViewModel = roomCreateViewModel) }
             ) {
                 Box(
                     modifier = Modifier
@@ -188,6 +190,7 @@ fun RoomListPreview() {
     RoomListScreen(
         navController = rememberNavController(),
         profileViewModel = ProfileViewModel(LocalContext.current),
-        roomListViewModel = RoomListViewModel(context = LocalContext.current)
+        roomListViewModel = RoomListViewModel(context = LocalContext.current),
+        roomCreateViewModel = RoomCreateViewModel(LocalContext.current)
     )
 }

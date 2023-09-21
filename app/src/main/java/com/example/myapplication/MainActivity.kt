@@ -27,6 +27,7 @@ import com.example.myapplication.view.screen.create.server.ServerEfudaCollection
 import com.example.myapplication.view.screen.create.server.ServerKartaDetail
 import com.example.myapplication.view.screen.playKarta.RoomCreateScreen
 import com.example.myapplication.view.screen.playKarta.RoomListScreen
+import com.example.myapplication.view.screen.playKarta.StandByRoomScreen
 import com.example.myapplication.view.screen.playKarta.solo.SoloSetupScreen
 import com.example.myapplication.view.screen.profile.ProfileSetupScreen
 import com.example.myapplication.view.screen.profile.UserProfileScreen
@@ -111,7 +112,8 @@ class MainActivity: ComponentActivity() {
                 composable(Screen.RoomList.route) { RoomListScreen(
                     navController = navController,
                     profileViewModel = profileViewModel,
-                    roomListViewModel = roomList
+                    roomListViewModel = roomList,
+                    roomCreateViewModel
                 ) }
                 //ソロプレイ用のScreen
                 composable(Screen.SoloSetup.route) { SoloSetupScreen(
@@ -124,6 +126,11 @@ class MainActivity: ComponentActivity() {
                     navController = navController,
                     profileViewModel = profileViewModel,
                     roomListViewModel = roomList,
+                    roomCreateViewModel = roomCreateViewModel
+                ) }
+                //ルーム待機中
+                composable(Screen.StandByRoom.route) { StandByRoomScreen(
+                    navController = navController,
                     roomCreateViewModel = roomCreateViewModel
                 ) }
             }
@@ -146,5 +153,6 @@ class MainActivity: ComponentActivity() {
         object RoomList: Screen("roomList")
         object SoloSetup: Screen("soloSetup")
         object RoomCreate: Screen("roomCreate")
+        object StandByRoom: Screen("standByRoom")
     }
 }

@@ -99,7 +99,7 @@ fun RoomCreateScreen(
                 }
                 ChoiceComponent(roomCreateViewModel = roomCreateViewModel)
                 Spacer(modifier = Modifier.height(20.dp))
-                RoomCreateButton(roomCreateViewModel = roomCreateViewModel)
+                RoomCreateButton(roomCreateViewModel = roomCreateViewModel, navController)
             }
         }
     }
@@ -288,13 +288,13 @@ fun SelectKartaImage(roomCreateViewModel: RoomCreateViewModel) {
 }
 
 @Composable
-private fun RoomCreateButton(roomCreateViewModel: RoomCreateViewModel) {
+private fun RoomCreateButton(roomCreateViewModel: RoomCreateViewModel, navController: NavController) {
     val context = LocalContext.current
     ButtonContent(
         modifier = Modifier
             .height(50.dp)
             .width(240.dp),
-        onClick = { roomCreateViewModel.gameRoomCreate(context = context) },
+        onClick = { roomCreateViewModel.gameRoomCreate(context = context, navController = navController) },
         text = "部屋を作成",
         fontSize = 18,
         border = 6
