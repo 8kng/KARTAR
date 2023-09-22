@@ -49,6 +49,7 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
     //入った部屋
     val enterRoom = mutableStateOf("")
     val standByPlayer = mutableStateOf(0)
+    val ownerUid = mutableStateOf("")
     val allPlayers = mutableStateOf<List<EnterPlayer>>(listOf())
     val playerInformation = mutableStateOf<List<Pair<String, String>>>(listOf())
 
@@ -132,6 +133,34 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
         }
     }
 
+    fun exitRoom(navController: NavController) {
+        navController.popBackStack("roomList", false)
+        viewModelScope.launch {
+            try {
+                val database = FirebaseDatabase.getInstance()
+                val createRoom = database.getReference("room").child(enterRoom.value)
+                if (ownerUid.value == FirebaseAuth.getInstance().currentUser?.uid) {
+                    createRoom.setValue(null)
+                } else {
+                    createRoom.child("roomInfo").child("count").get()
+                        .addOnSuccessListener { snapshot ->
+                            val currentValue: Int? = snapshot.getValue(Int::class.java)
+                            if (currentValue != null) {
+                                createRoom.child("roomInfo").child("count").setValue(currentValue - 1)
+                                //ポイント削除
+                                val userId = FirebaseAuth.getInstance().currentUser?.uid.toString()
+                                createRoom.child("point").child(userId).setValue(null)
+                                //プレーヤー削除
+                                createRoom.child("player").child(userId).setValue(null)
+                            }
+                        }
+                }
+            } catch (e:Exception) {
+                Log.d("エラー", e.message.toString())
+            }
+        }
+    }
+
     fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
@@ -142,31 +171,36 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
     fun roomInformation(navController: NavController) {
         val database = FirebaseDatabase.getInstance()
         val enterRoom = database.getReference("room").child(enterRoom.value)
+        navController.navigate("standByRoom")
         enterRoom.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                //現在の参加人数取得
-                val roomInfo = snapshot.child("roomInfo").getValue(RoomInfo::class.java)
-                Log.d("へや", roomInfo.toString())
-                if (roomInfo != null) {
-                    standByPlayer.value = roomInfo.count
-                    Log.d("へや", standByPlayer.value.toString())
-                }
-                //現在の参加者取得
-                val currentPlayer = mutableListOf<EnterPlayer>()
-                snapshot.child("player").children.forEach { playerSnapshot ->
+                if (snapshot.value == null) {
+                    navController.navigate("roomList")
+                }else {
+                    //現在の参加人数取得
+                    val roomInfo = snapshot.child("roomInfo").getValue(RoomInfo::class.java)
+                    Log.d("へや", roomInfo.toString())
+                    if (roomInfo != null) {
+                        standByPlayer.value = roomInfo.count
+                        Log.d("へや", standByPlayer.value.toString())
+                    }
+                    //現在の参加者取得
+                    val currentPlayer = mutableListOf<EnterPlayer>()
+                    snapshot.child("player").children.forEach { playerSnapshot ->
+                        currentPlayer.add(EnterPlayer(
+                            uid = playerSnapshot.key.toString(),
+                            state = playerSnapshot.value.toString()
+                        ))
+                    }
+                    val owner = snapshot.child("owner").getValue(owner::class.java)
                     currentPlayer.add(EnterPlayer(
-                        uid = playerSnapshot.key.toString(),
-                        state = playerSnapshot.value.toString()
+                        uid = owner?.uid.toString(),
+                        state = "ok"
                     ))
+                    ownerUid.value = owner?.uid ?: ""
+                    allPlayers.value = currentPlayer
+                    getPlayerProfile()
                 }
-                val owner = snapshot.child("owner").getValue(owner::class.java)
-                currentPlayer.add(EnterPlayer(
-                    uid = owner?.uid.toString(),
-                    state = "ok"
-                ))
-                allPlayers.value = currentPlayer
-                getPlayerProfile()
-                navController.navigate("standByRoom")
             }
 
             override fun onCancelled(error: DatabaseError) {
