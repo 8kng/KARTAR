@@ -1,6 +1,7 @@
 package com.example.myapplication.controller
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -10,13 +11,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.example.myapplication.FirebaseSingleton
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
-class AuthViewModel: ViewModel() {
+class AuthViewModel(): ViewModel() {
     val email = mutableStateOf("")
     val password = mutableStateOf("")
     val passwordVisibility = mutableStateOf(false)
@@ -125,27 +127,31 @@ class AuthViewModel: ViewModel() {
                             showProcessIndicator.value = false
                         } else {
                             Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
-                            Log.d("login", "failed")
+                            Log.d("エラー", "failed")
                             showProcessIndicator.value = false
                         }
                     }.addOnFailureListener {
                         showProcessIndicator.value = false
                     }
             } catch (e:Exception) {
+                Log.d("エラー", e.message.toString())
                 Toast.makeText(context, "ログインが失敗しました...", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     fun signOutUser(navController: NavController, context: Context) {
-        FirebaseAuth.getInstance().signOut()
-        navController.navigate("notLoggedIn") {
-            popUpTo(navController.graph.startDestDisplayName) { inclusive = true }
-        }
+        /*ユーザのサインアウト*/
+        FirebaseSingleton.userSignOut()
+        /*ローカルに記録していたユーザの情報削除*/
         val sharedPref: SharedPreferences = context.getSharedPreferences(context.getString(R.string.UserInformation), Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
             clear()
             commit()
+        }
+        /*未ログイン画面へ遷移*/
+        navController.navigate("notLoggedIn") {
+            popUpTo(navController.graph.startDestDisplayName) { inclusive = true }
         }
     }
 }
