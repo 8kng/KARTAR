@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -279,6 +280,10 @@ class KartaSearchViewModel : ViewModel(){
         }
     }
 
+    val operationComplete: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>()
+    }
+
     //選択したかるたの読み札・絵札取得
     fun getYomifudaAndEfuda(kartaUid: String) {
         if (FirebaseAuth.getInstance().currentUser?.uid != null){
@@ -298,6 +303,7 @@ class KartaSearchViewModel : ViewModel(){
                         yomifuda = yomifudaTask.get("yomifuda").toString()
                     ))
                 }
+                operationComplete.value = true
                 kartaDataList.value = currentList
             }
         }

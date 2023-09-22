@@ -90,7 +90,7 @@ class RoomListViewModel(context: Context) : ViewModel() {
         })
     }
 
-    fun enterRoom(index: Int, navController: NavController, roomCreateViewModel: RoomCreateViewModel) {
+    fun enterRoom(index: Int, navController: NavController, roomCreateViewModel: RoomCreateViewModel, context: Context) {
         viewModelScope.launch {
             try {
                 val database = FirebaseDatabase.getInstance()
@@ -109,8 +109,8 @@ class RoomListViewModel(context: Context) : ViewModel() {
                             val playerUpdateMap = HashMap<String, Any>()
                             playerUpdateMap[FirebaseAuth.getInstance().currentUser?.uid.toString()] = "enter"
                             createRoom.child("player").updateChildren(playerUpdateMap)
-                            roomCreateViewModel.enterRoom.value = roomList.value[index].roomUid
-                            roomCreateViewModel.roomInformation(navController)
+                            roomCreateViewModel.enterRoomm.value = roomList.value[index].roomUid
+                            roomCreateViewModel.roomInformation(navController, context = context)
                         }
                     }
             } catch (e:Exception) {

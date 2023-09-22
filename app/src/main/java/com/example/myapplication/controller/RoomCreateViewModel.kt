@@ -2,6 +2,7 @@ package com.example.myapplication.controller
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.util.Log
 import android.widget.Toast
@@ -10,8 +11,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.bumptech.glide.Glide
 import com.example.myapplication.R
 import com.example.myapplication.model.EnterPlayer
+import com.example.myapplication.model.KARTAData
 import com.example.myapplication.model.realTimeDatabase.RoomInfo
 import com.example.myapplication.model.realTimeDatabase.gameInfo
 import com.example.myapplication.model.realTimeDatabase.owner
@@ -26,9 +29,14 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 import kotlin.random.Random
 
@@ -47,7 +55,7 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
     val kartaDirectories = mutableStateOf<List<File>>(listOf())
     val playKartaTitle = mutableStateOf("")
     //入った部屋
-    val enterRoom = mutableStateOf("")
+    val enterRoomm = mutableStateOf("")
     val standByPlayer = mutableStateOf(0)
     val ownerUid = mutableStateOf("")
     val allPlayers = mutableStateOf<List<EnterPlayer>>(listOf())
@@ -61,7 +69,14 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
     //かるたディレクトリから名前を取得
     private fun getKartaDir(context: Context) {
         val dir = File(context.filesDir, "karta")
-        kartaDirectories.value = dir.listFiles()?.filter { it.isDirectory } ?: listOf()
+        kartaDirectories.value = dir.listFiles()
+            ?.filter { it.isDirectory }
+            ?.filter {
+                val sharedPreferences = context.getSharedPreferences(it.nameWithoutExtension, Context.MODE_PRIVATE)
+                val valuePref = sharedPreferences.getString("state", "サーバ")
+                valuePref != "ローカル"
+            }
+            ?: listOf()
     }
 
     //部屋の名前入力処理
@@ -125,8 +140,8 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
                 }
                 createRoom.child("gameInfo").child("hiragana").setValue(dataToSave)
                 Toast.makeText(context, "成功しました", Toast.LENGTH_SHORT).show()
-                enterRoom.value = roomUid.value
-                roomInformation(navController)
+                enterRoomm.value = roomUid.value
+                roomInformation(navController, context)
             }
         } else {
             Toast.makeText(context, "失敗しました", Toast.LENGTH_SHORT).show()
@@ -138,7 +153,7 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             try {
                 val database = FirebaseDatabase.getInstance()
-                val createRoom = database.getReference("room").child(enterRoom.value)
+                val createRoom = database.getReference("room").child(enterRoomm.value)
                 if (ownerUid.value == FirebaseAuth.getInstance().currentUser?.uid) {
                     createRoom.setValue(null)
                 } else {
@@ -168,9 +183,9 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
     }
 
     //ゲーム部屋の状態確認
-    fun roomInformation(navController: NavController) {
+    fun roomInformation(navController: NavController, context: Context) {
         val database = FirebaseDatabase.getInstance()
-        val enterRoom = database.getReference("room").child(enterRoom.value)
+        val enterRoom = database.getReference("room").child(enterRoomm.value)
         navController.navigate("standByRoom")
         enterRoom.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -192,12 +207,102 @@ class RoomCreateViewModel(context: Context) : ViewModel() {
                             state = playerSnapshot.value.toString()
                         ))
                     }
+                    //オーナ情報取得
                     val owner = snapshot.child("owner").getValue(owner::class.java)
                     currentPlayer.add(EnterPlayer(
                         uid = owner?.uid.toString(),
                         state = "ok"
                     ))
                     ownerUid.value = owner?.uid ?: ""
+                    //かるた情報
+                    val gameInfo = snapshot.child("gameInfo").child("kartaUid").getValue(String::class.java)
+                    Log.d("stream", "分岐:${gameInfo}")
+                    if (!File(context.filesDir, "karta/${gameInfo}").exists()) {
+                        if (gameInfo != null) {
+                            Log.d("stream", "かるたdownload")
+                            val firestore = FirebaseFirestore.getInstance()
+                            val currentList = mutableListOf<KARTAData>()
+                            val kartaUid = gameInfo
+                            var kartaTitle = ""
+                            var kartaDescription = ""
+                            var kartaGenre = ""
+                            viewModelScope.launch {
+                                val getKartaInfo = firestore.collection("kartaes").document(kartaUid).get()
+                                    .addOnSuccessListener { snapshot ->
+                                        kartaTitle = snapshot.get("title").toString()
+                                        kartaDescription = snapshot.get("description").toString()
+                                        kartaGenre = snapshot.get("genre").toString()
+                                    }
+                                for (index in 0 until 44) {
+                                    val efudaTask = firestore.collection("kartaes").document(kartaUid)
+                                        .collection("efuda").document(index.toString()).get().await()
+
+                                    val yomifudaTask = firestore.collection("kartaes").document(kartaUid)
+                                        .collection("yomifuda").document(index.toString()).get().await()
+
+                                    currentList.add(KARTAData(
+                                        efuda = efudaTask.get("efuda").toString(),
+                                        yomifuda = yomifudaTask.get("yomifuda").toString()
+                                    ))
+                                }
+
+                                if (currentList.size == 44) {
+                                    Log.d("listtt", currentList.toString())
+                                    try {
+                                        val sharedPreferences = context.getSharedPreferences(kartaUid, Context.MODE_PRIVATE)
+                                        val editor = sharedPreferences.edit()
+                                        val dir = File(context.filesDir, "karta/$kartaUid")
+                                        if (!dir.exists()) {
+                                            dir.mkdirs()
+                                        }
+                                        editor.putString("state", "他人")
+                                        editor.putString("title", kartaTitle)
+                                        editor.putString("description", kartaDescription)
+                                        editor.putString("genre", kartaGenre)
+                                        editor.putString("uid", kartaUid)
+                                        val jobs = mutableListOf<Job>()
+                                        currentList.forEachIndexed { index, item ->
+                                            editor.putString(index.toString(), item.yomifuda)
+                                            val job = launch(Dispatchers.IO) {
+                                                val bitmap = Glide.with(context).asBitmap().load(item.efuda).submit().get()
+                                                val file = File(dir, "$index.png")
+                                                FileOutputStream(file).use { stream ->
+                                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                                    Log.d("stream", "画像を保存した$index")
+                                                }
+                                            }
+                                            jobs.add(job)
+                                        }
+                                        jobs.forEach { it.join() }
+                                        editor.apply()
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(context, "保存しました", Toast.LENGTH_SHORT).show()
+                                            val database = FirebaseDatabase.getInstance()
+                                            val userRef = database.getReference("room")
+                                                .child(enterRoomm.value)
+                                                .child("player")
+                                                .child(FirebaseAuth.getInstance().uid.toString())
+
+                                            userRef.setValue("ok")
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            Log.d("エラー", e.message.toString())
+                                            Toast.makeText(context, "保存に失敗しました", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        val database = FirebaseDatabase.getInstance()
+                        val userRef = database.getReference("room")
+                            .child(enterRoomm.value)
+                            .child("player")
+                            .child(FirebaseAuth.getInstance().uid.toString())
+
+                        userRef.setValue("ok")
+                    }
                     allPlayers.value = currentPlayer
                     getPlayerProfile()
                 }

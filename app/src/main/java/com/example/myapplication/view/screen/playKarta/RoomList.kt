@@ -127,6 +127,7 @@ fun RoomSearchBox(roomListViewModel: RoomListViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoomListColumn(roomListViewModel: RoomListViewModel, navController: NavController, roomCreateViewModel: RoomCreateViewModel){
+    val context = LocalContext.current
     LazyColumn(
         modifier = Modifier
             .padding(start = 30.dp, end = 30.dp)
@@ -134,7 +135,7 @@ fun RoomListColumn(roomListViewModel: RoomListViewModel, navController: NavContr
     ) {
         items(roomListViewModel.roomList.value.size) { index ->
             Surface(
-                onClick = { roomListViewModel.enterRoom(index, navController, roomCreateViewModel = roomCreateViewModel) }
+                onClick = { roomListViewModel.enterRoom(index, navController, roomCreateViewModel = roomCreateViewModel, context = context) }
             ) {
                 Box(
                     modifier = Modifier
