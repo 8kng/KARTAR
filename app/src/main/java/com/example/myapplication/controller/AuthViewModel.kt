@@ -1,9 +1,7 @@
 package com.example.myapplication.controller
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
@@ -11,9 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.example.myapplication.FirebaseSingleton
-import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import com.example.myapplication.controller.singleton.FirebaseSingleton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch

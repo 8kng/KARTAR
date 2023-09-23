@@ -58,6 +58,7 @@ class MainActivity: ComponentActivity() {
         val roomListViewModel: RoomListViewModel = viewModel(factory = RoomListViewModelFactory(context))
         val createViewModel: CreateViewModel = viewModel()
         val roomCreateViewModel: RoomCreateViewModel = viewModel(factory = RoomCreateViewModelFactory(context))
+        val authViewModel: AuthViewModel = viewModel()
         /*最初の画面遷移先を指定*/
         val startDestination: String = mainViewModel.getStartDestination()
 
@@ -71,9 +72,9 @@ class MainActivity: ComponentActivity() {
                 /*未ログイン時の画面*/
                 composable(Screen.NotLoggedIn.route) { NotLoggedInScreen(navController = navController) }
                 /*サインイン画面*/
-                composable(Screen.Signin.route) { SignInScreen(navController, AuthViewModel()) }
+                composable(Screen.Signin.route) { SignInScreen(navController, authViewModel) }
                 /*ログイン画面*/
-                composable(Screen.Login.route) { LoginScreen(navController, authViewModel = AuthViewModel()) }
+                composable(Screen.Login.route) { LoginScreen(navController, authViewModel = authViewModel) }
                 /*******
                  create
                  *********/

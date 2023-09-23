@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.controller.singleton.ConstantsSingleton
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.view.widget.button.ButtonContent
@@ -139,13 +140,11 @@ fun UserIconImage(profileViewModel: ProfileViewModel) {
 private fun ProfileSaveButton(profileViewModel: ProfileViewModel, navController: NavController) {
     val context = LocalContext.current
     ButtonContent(
-        modifier = Modifier
-            .height(50.dp)
-            .width(250.dp),
+        modifier = ConstantsSingleton.widthButtonModifier,
         onClick = { profileViewModel.registerUserInformation(context, navController) },
         text = "OK",
         border = 4,
-        fontSize = 18,
+        fontSize = ConstantsSingleton.widthButtonText,
         fontWeight = FontWeight.Normal
     )
 }

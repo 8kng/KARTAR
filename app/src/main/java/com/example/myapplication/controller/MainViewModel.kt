@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.myapplication.FirebaseSingleton
+import com.example.myapplication.controller.singleton.FirebaseSingleton
 
 class MainViewModel(context: Context): ViewModel(){
     private val userInformationSharedPreferences: SharedPreferences? = context.getSharedPreferences("UserInformation", Context.MODE_PRIVATE)

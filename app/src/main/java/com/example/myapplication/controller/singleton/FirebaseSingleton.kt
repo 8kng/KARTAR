@@ -1,6 +1,5 @@
-package com.example.myapplication
+package com.example.myapplication.controller.singleton
 
-import com.example.myapplication.view.screen.auth.NotLoggedInScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
