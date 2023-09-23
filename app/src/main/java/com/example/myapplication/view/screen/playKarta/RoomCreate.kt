@@ -306,7 +306,7 @@ private fun RoomCreateButton(roomCreateViewModel: RoomCreateViewModel, navContro
 private fun RoomCreateScreenPreview() {
     RoomCreateScreen(
         navController = rememberNavController(),
-        profileViewModel = ProfileViewModel(context = LocalContext.current),
+        profileViewModel = ProfileViewModel(context = LocalContext.current, navController = rememberNavController()),
         roomListViewModel = RoomListViewModel(context = LocalContext.current),
         roomCreateViewModel = RoomCreateViewModel(context = LocalContext.current)
     )

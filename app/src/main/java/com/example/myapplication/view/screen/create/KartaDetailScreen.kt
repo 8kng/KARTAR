@@ -300,7 +300,7 @@ private fun kartaDeleteDialog(
 private fun KartaDetailScreenView() {
     KartaDetailScreen(
         navController = rememberNavController(),
-        profileViewModel = ProfileViewModel(LocalContext.current),
+        profileViewModel = ProfileViewModel(LocalContext.current, rememberNavController()),
         kartaUid = "",
         createViewModel = CreateViewModel()
     )

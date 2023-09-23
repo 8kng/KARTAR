@@ -9,10 +9,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.controller.ProfileViewModel
@@ -41,7 +41,7 @@ import com.example.myapplication.view.widget.button.ButtonContent
 import com.example.myapplication.view.widget.textField.UserNameTextField
 
 @Composable
-fun ProfileSetupScreen(profileViewModel: ProfileViewModel, navController: NavController) {
+fun ProfileSetupScreen(profileViewModel: ProfileViewModel) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -51,31 +51,11 @@ fun ProfileSetupScreen(profileViewModel: ProfileViewModel, navController: NavCon
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(modifier = Modifier.height(30.dp))
-                Text(text = "登録ありがとうございます!")
-                Text(text = "次に自身のプロフィールを入力してください")
-                Spacer(modifier = Modifier.height(50.dp))
-                UserIconImage(profileViewModel = profileViewModel)
-                if (profileViewModel.isUserIconValid.value) {
-                    Text(
-                        text = "アイコンを選択してください",
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                UserNameTextField(profileViewModel = profileViewModel)
-                if (profileViewModel.isUserNameValid.value) {
-                    Text(
-                        text = "ユーザ名を入力してください",
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-                }
-                Spacer(modifier = Modifier.height(140.dp))
-                ProfileSaveButton(profileViewModel = profileViewModel, navController = navController)
+                DescriptionTextComponent()
+                UserSettingComponent(profileViewModel = profileViewModel)
+                BottomButtonComponent(profileViewModel = profileViewModel)
             }
-            //サーバ処理中に表示するインディケーター
+            /*サーバ処理中に表示するインディケーター*/
             if (profileViewModel.showProcessIndicator.value) {
                 Box(
                     modifier = Modifier
@@ -91,13 +71,69 @@ fun ProfileSetupScreen(profileViewModel: ProfileViewModel, navController: NavCon
 }
 
 @Composable
+private fun DescriptionTextComponent() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(fraction = 0.1f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "登録ありがとうございます!")
+            Text(text = "次に自身のプロフィールを入力してください")
+        }
+    }
+}
+
+@Composable
+private fun UserSettingComponent(profileViewModel: ProfileViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(fraction = 0.8f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            UserIconImage(profileViewModel = profileViewModel)
+            if (profileViewModel.isIconImageValid.value) {
+                Text(
+                    text = "アイコンを選択してください",
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            UserNameTextField(profileViewModel = profileViewModel)
+            if (profileViewModel.isUserNameValid.value) {
+                Text(
+                    text = "ユーザ名を入力してください",
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(140.dp))
+        }
+    }
+}
+
+@Composable
+private fun BottomButtonComponent(profileViewModel: ProfileViewModel) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        ProfileSaveButton(profileViewModel = profileViewModel)
+    }
+}
+
+@Composable
 fun UserIconImage(profileViewModel: ProfileViewModel) {
+    /*フォルダから写真を選択した時の処理*/
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         profileViewModel.localImageUri.value = uri
     }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Spacer(modifier = Modifier.height(10.dp))
         if (profileViewModel.localImageUri.value != null) {
             Image(
                 painter = rememberAsyncImagePainter(profileViewModel.localImageUri.value),
@@ -137,11 +173,11 @@ fun UserIconImage(profileViewModel: ProfileViewModel) {
 }
 
 @Composable
-private fun ProfileSaveButton(profileViewModel: ProfileViewModel, navController: NavController) {
+private fun ProfileSaveButton(profileViewModel: ProfileViewModel) {
     val context = LocalContext.current
     ButtonContent(
         modifier = ConstantsSingleton.widthButtonModifier,
-        onClick = { profileViewModel.registerUserInformation(context, navController) },
+        onClick = { profileViewModel.registerUserInformation(context) },
         text = "OK",
         border = 4,
         fontSize = ConstantsSingleton.widthButtonText,
@@ -153,5 +189,5 @@ private fun ProfileSaveButton(profileViewModel: ProfileViewModel, navController:
 @Composable
 fun ProfileSetupScreenPreview() {
     val context = LocalContext.current
-    ProfileSetupScreen(ProfileViewModel(context), rememberNavController())
+    ProfileSetupScreen(ProfileViewModel(context, rememberNavController()))
 }

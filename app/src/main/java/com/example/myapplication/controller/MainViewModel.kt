@@ -1,25 +1,21 @@
 package com.example.myapplication.controller
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.controller.singleton.FirebaseSingleton
 
-class MainViewModel(context: Context): ViewModel(){
-    private val userInformationSharedPreferences: SharedPreferences? = context.getSharedPreferences("UserInformation", Context.MODE_PRIVATE)
-
+class MainViewModel: ViewModel(){
     /**ユーザの名前をローカルから取得**/
-    private fun getUserName(): String {
-        return userInformationSharedPreferences?.getString("UserName", "").toString()
+    private fun getUserName(profileViewModel: ProfileViewModel): String {
+        return profileViewModel.userSharedPreferences.getString("UserName", "").toString()
     }
 
     /**起動時の画面遷移の設定**/
-    fun getStartDestination(): String {
+    fun getStartDestination(profileViewModel: ProfileViewModel): String {
         return try {
             FirebaseSingleton.ensureLoggedIn()
             if (FirebaseSingleton.currentUid() != null) {
-                val userName = getUserName()
+                val userName = getUserName(profileViewModel = profileViewModel)
                 if (userName == "") "profileSetUp" else "home"
             } else {
                 "notLoggedIn"

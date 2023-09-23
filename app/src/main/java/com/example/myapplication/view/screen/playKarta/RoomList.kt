@@ -190,7 +190,7 @@ fun SoloPlayButton(navController: NavController) {
 fun RoomListPreview() {
     RoomListScreen(
         navController = rememberNavController(),
-        profileViewModel = ProfileViewModel(LocalContext.current),
+        profileViewModel = ProfileViewModel(LocalContext.current, navController = rememberNavController()),
         roomListViewModel = RoomListViewModel(context = LocalContext.current),
         roomCreateViewModel = RoomCreateViewModel(LocalContext.current)
     )

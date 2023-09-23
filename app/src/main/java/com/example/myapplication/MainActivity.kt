@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,7 +16,6 @@ import com.example.myapplication.controller.MainViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.controller.RoomCreateViewModel
 import com.example.myapplication.controller.RoomListViewModel
-import com.example.myapplication.controller.viewModelFactory.MainViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.ProfileViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.RoomCreateViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.RoomListViewModelFactory
@@ -52,15 +50,15 @@ class MainActivity: ComponentActivity() {
         val navController = rememberNavController()
         val context = LocalContext.current
         /*viewModelの作成*/
-        val mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(context))
+        val mainViewModel: MainViewModel = viewModel()
         val kartaSearchViewModel: KartaSearchViewModel = viewModel()
-        val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(context))
+        val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(context, navController))
         val roomListViewModel: RoomListViewModel = viewModel(factory = RoomListViewModelFactory(context))
         val createViewModel: CreateViewModel = viewModel()
         val roomCreateViewModel: RoomCreateViewModel = viewModel(factory = RoomCreateViewModelFactory(context))
         val authViewModel: AuthViewModel = viewModel()
         /*最初の画面遷移先を指定*/
-        val startDestination: String = mainViewModel.getStartDestination()
+        val startDestination: String = mainViewModel.getStartDestination(profileViewModel = profileViewModel)
 
         NavHost(
             navController = navController,
@@ -115,7 +113,7 @@ class MainActivity: ComponentActivity() {
                     ) }
                 /**profile**/
                 /*プロフィールの初期設定*/
-                composable(Screen.ProfileSetup.route) { ProfileSetupScreen(profileViewModel = ProfileViewModel(context), navController) }
+                composable(Screen.ProfileSetup.route) { ProfileSetupScreen(profileViewModel = profileViewModel) }
                 /*プロフィール確認画面*/
                 composable(Screen.UserProfile.route) { UserProfileScreen(navController = navController, profileViewModel = profileViewModel) }
                 /**playKarta**/

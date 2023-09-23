@@ -29,7 +29,7 @@ fun CircleUserIcon(
         }
     ) {
         AsyncImage(
-            model = profileViewModel.imageUri.value,
+            model = profileViewModel.iconImageUri.value,
             contentScale = ContentScale.Crop,
             contentDescription = null,
             modifier = modifier

@@ -8,12 +8,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
@@ -52,6 +52,7 @@ import coil.compose.AsyncImage
 import com.example.myapplication.R
 import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.controller.singleton.ConstantsSingleton
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
@@ -79,16 +80,12 @@ fun UserProfileScreen(navController: NavController, profileViewModel: ProfileVie
                     modifier = Modifier,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(modifier = Modifier.height(80.dp))
-                    UserIcon(profileViewModel)
-                    Spacer(modifier = Modifier.height(50.dp))
-                    UserNameText(profileViewModel)
-                    Spacer(modifier = Modifier.height(120.dp))
-                    SignOutButton(profileViewModel = profileViewModel)
-                    //名前変更するダイアログ
+                    UserInformationComponent(profileViewModel = profileViewModel)
+                    BottomButtonComponent(profileViewModel = profileViewModel)
+                    /*名前変更するダイアログ*/
                     if (profileViewModel.showUserNameDialog.value) {
                         UserNameChangeDialog(profileViewModel = profileViewModel)
-                    //サインアウト用のダイアログ
+                    /*サインアウト用のダイアログ*/
                     } else if (profileViewModel.showSignOutDialog.value) {
                         SignOutDialog(
                             profileViewModel = profileViewModel,
@@ -97,7 +94,7 @@ fun UserProfileScreen(navController: NavController, profileViewModel: ProfileVie
                         )
                     }
                 }
-                //サーバ処理中に表示
+                /*サーバ処理中に表示*/
                 if (profileViewModel.showProcessIndicator.value) {
                     Box(
                         modifier = Modifier
@@ -136,6 +133,34 @@ fun PopBackAppBar(navController: NavController) {
 }
 
 @Composable
+private fun UserInformationComponent(profileViewModel: ProfileViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(fraction = 0.8f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            UserIcon(profileViewModel)
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.1f))
+            UserNameText(profileViewModel)
+        }
+    }
+}
+
+@Composable
+private fun BottomButtonComponent(profileViewModel: ProfileViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        SignOutButton(profileViewModel = profileViewModel)
+    }
+}
+
+@Composable
 fun UserIcon(profileViewModel: ProfileViewModel) {
     val context = LocalContext.current
     val launcher =
@@ -148,7 +173,7 @@ fun UserIcon(profileViewModel: ProfileViewModel) {
         modifier = Modifier.fillMaxWidth()
     ) {
         AsyncImage(
-            model = profileViewModel.imageUri.value,
+            model = profileViewModel.iconImageUri.value,
             contentScale = ContentScale.Crop,
             contentDescription = null,
             modifier = Modifier
@@ -219,12 +244,10 @@ private fun UserNameText(profileViewModel: ProfileViewModel) {
 @Composable
 fun SignOutButton(profileViewModel: ProfileViewModel) {
     ButtonContent(
-        modifier = Modifier
-            .height(50.dp)
-            .width(260.dp),
+        modifier = ConstantsSingleton.widthButtonModifier,
         onClick = { profileViewModel.showSignOutDialog.value = true },
         text = "ログアウトする",
-        fontSize = 16,
+        fontSize = ConstantsSingleton.widthButtonText,
         border = 4
     )
 }
@@ -292,5 +315,5 @@ fun SignOutDialog(
 @Preview
 @Composable
 private fun UserProfileScreenPreview() {
-    UserProfileScreen(rememberNavController(), ProfileViewModel(LocalContext.current))
+    UserProfileScreen(rememberNavController(), ProfileViewModel(LocalContext.current, navController = rememberNavController()))
 }
