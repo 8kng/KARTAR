@@ -30,7 +30,7 @@ import com.example.myapplication.theme.Yellow2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswordTextField(authViewModel: AuthViewModel = AuthViewModel()) {
+fun PasswordTextField(authViewModel: AuthViewModel) {
     OutlinedTextField(
         value = authViewModel.password.value,
         onValueChange = { newValue ->

@@ -25,7 +25,7 @@ import com.example.myapplication.theme.LiteGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmailTextField(authViewModel: AuthViewModel = AuthViewModel()) {
+fun EmailTextField(authViewModel: AuthViewModel) {
     OutlinedTextField(
         value = authViewModel.email.value,
         onValueChange = { newValue ->

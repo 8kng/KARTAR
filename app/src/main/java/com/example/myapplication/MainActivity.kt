@@ -16,6 +16,7 @@ import com.example.myapplication.controller.MainViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.controller.RoomCreateViewModel
 import com.example.myapplication.controller.RoomListViewModel
+import com.example.myapplication.controller.viewModelFactory.AuthViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.ProfileViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.RoomCreateViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.RoomListViewModelFactory
@@ -56,7 +57,7 @@ class MainActivity: ComponentActivity() {
         val roomListViewModel: RoomListViewModel = viewModel(factory = RoomListViewModelFactory(context))
         val createViewModel: CreateViewModel = viewModel()
         val roomCreateViewModel: RoomCreateViewModel = viewModel(factory = RoomCreateViewModelFactory(context))
-        val authViewModel: AuthViewModel = viewModel()
+        val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(profileViewModel = profileViewModel))
         /*最初の画面遷移先を指定*/
         val startDestination: String = mainViewModel.getStartDestination(profileViewModel = profileViewModel)
 
@@ -115,7 +116,7 @@ class MainActivity: ComponentActivity() {
                 /*プロフィールの初期設定*/
                 composable(Screen.ProfileSetup.route) { ProfileSetupScreen(profileViewModel = profileViewModel) }
                 /*プロフィール確認画面*/
-                composable(Screen.UserProfile.route) { UserProfileScreen(navController = navController, profileViewModel = profileViewModel) }
+                composable(Screen.UserProfile.route) { UserProfileScreen(navController = navController, profileViewModel = profileViewModel, authViewModel = authViewModel) }
                 /**playKarta**/
                 /*部屋一覧表示*/
                 composable(Screen.RoomList.route) { RoomListScreen(

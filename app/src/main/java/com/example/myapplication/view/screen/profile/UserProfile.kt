@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -62,7 +63,7 @@ import com.example.myapplication.view.widget.textField.UserNameTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(navController: NavController, profileViewModel: ProfileViewModel) {
+fun UserProfileScreen(navController: NavController, profileViewModel: ProfileViewModel, authViewModel: AuthViewModel) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -89,7 +90,7 @@ fun UserProfileScreen(navController: NavController, profileViewModel: ProfileVie
                     } else if (profileViewModel.showSignOutDialog.value) {
                         SignOutDialog(
                             profileViewModel = profileViewModel,
-                            authViewModel = AuthViewModel(),
+                            authViewModel = authViewModel,
                             navController = navController
                         )
                     }
@@ -287,7 +288,6 @@ fun SignOutDialog(
     authViewModel: AuthViewModel,
     navController: NavController
     ) {
-    val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { profileViewModel.showSignOutDialog.value = false },
         title = { Text(text = "最終確認", color = DarkGreen)},
@@ -304,7 +304,7 @@ fun SignOutDialog(
                 Text(text = "NO", color = Grey2, fontSize = 16.sp)
             }
             TextButton(
-                onClick = { authViewModel.signOutUser(navController = navController, context = context)}
+                onClick = { authViewModel.signOutUser(navController = navController, profileViewModel = profileViewModel)}
             ) {
                 Text(text = "OK", color = DarkGreen, fontSize = 16.sp)
             }
@@ -315,5 +315,5 @@ fun SignOutDialog(
 @Preview
 @Composable
 private fun UserProfileScreenPreview() {
-    UserProfileScreen(rememberNavController(), ProfileViewModel(LocalContext.current, navController = rememberNavController()))
+    UserProfileScreen(rememberNavController(), profileViewModel = viewModel(), authViewModel = viewModel())
 }

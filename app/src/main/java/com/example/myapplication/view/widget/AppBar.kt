@@ -19,8 +19,6 @@ import com.example.myapplication.controller.ProfileViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(navController: NavController, profileViewModel: ProfileViewModel) {
-    val context = LocalContext.current
-    profileViewModel.updateUserIconFromSharedPref(context)
     TopAppBar(
         modifier = Modifier
             .height(70.dp)

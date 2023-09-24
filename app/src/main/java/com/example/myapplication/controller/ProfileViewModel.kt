@@ -132,7 +132,7 @@ class ProfileViewModel(context: Context, private val navController: NavControlle
         }
     }
 
-    /*アイコンの変更処理*/
+    /**アイコンの変更処理**/
     fun changeUserImageIcon(uri: Uri, context: Context) {
         iconImageUri.value = uri
         val uid = FirebaseSingleton.currentUid()
