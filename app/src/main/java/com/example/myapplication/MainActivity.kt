@@ -17,6 +17,7 @@ import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.controller.RoomCreateViewModel
 import com.example.myapplication.controller.RoomListViewModel
 import com.example.myapplication.controller.viewModelFactory.AuthViewModelFactory
+import com.example.myapplication.controller.viewModelFactory.CreateViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.ProfileViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.RoomCreateViewModelFactory
 import com.example.myapplication.controller.viewModelFactory.RoomListViewModelFactory
@@ -55,7 +56,7 @@ class MainActivity: ComponentActivity() {
         val kartaSearchViewModel: KartaSearchViewModel = viewModel()
         val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(context, navController))
         val roomListViewModel: RoomListViewModel = viewModel(factory = RoomListViewModelFactory(context))
-        val createViewModel: CreateViewModel = viewModel()
+        val createViewModel: CreateViewModel = viewModel(factory = CreateViewModelFactory(context))
         val roomCreateViewModel: RoomCreateViewModel = viewModel(factory = RoomCreateViewModelFactory(context))
         val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(profileViewModel = profileViewModel))
         /*最初の画面遷移先を指定*/
@@ -93,7 +94,7 @@ class MainActivity: ComponentActivity() {
                     KartaDetailScreen(navController = navController, profileViewModel = profileViewModel, kartaUid = kartaUid, createViewModel = createViewModel)
                 }
                 /*自作かるたがめん*/
-                composable(Screen.OriginalCreate.route) { OriginalCreateScreen(navController = navController) }
+                composable(Screen.OriginalCreate.route) { OriginalCreateScreen(navController = navController, createViewModel = createViewModel, profileViewModel = profileViewModel) }
                 /***************
                  create>>server
                  ***************/
@@ -107,6 +108,7 @@ class MainActivity: ComponentActivity() {
                 composable("${Screen.ServerKartaDetail.route}/{kartaUid}") {navBackStackEntry ->
                     val kartaUid = navBackStackEntry.arguments?.getString("kartaUid").toString()
                     ServerKartaDetail(
+                        createViewModel = createViewModel,
                         navController = navController,
                         profileViewModel = profileViewModel,
                         kartaSearchViewModel = kartaSearchViewModel,

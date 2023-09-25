@@ -364,6 +364,9 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
           if (!augmentedImageMap.containsKey(augmentedImage.getIndex())) {
             Anchor centerPoseAnchor = augmentedImage.createAnchor(augmentedImage.getCenterPose());
             augmentedImageMap.put(augmentedImage.getIndex(), Pair.create(augmentedImage, centerPoseAnchor));
+            if (!augmentedImageRenderer.isCreated(augmentedImage.getName())) {
+              augmentedImageRenderer.createOnGlThread(this, augmentedImage.getName());
+            }
           }
           break;
         case STOPPED:
@@ -377,11 +380,6 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
     // Draw all images in augmentedImageMap
     for (Pair<AugmentedImage, Anchor> pair : augmentedImageMap.values()) {
       AugmentedImage augmentedImage = pair.first;
-
-      // Assuming createOnGlThread is a heavy operation; let's optimize by checking if already done.
-      if (!augmentedImageRenderer.isCreated(augmentedImage.getName())) {
-        augmentedImageRenderer.createOnGlThread(/*context=*/ this, augmentedImage.getName());
-      }
       Anchor centerAnchor = pair.second;  // Reuse the value directly from the pair
       if (augmentedImage.getTrackingState() == TrackingState.TRACKING) {
         augmentedImageRenderer.draw(viewmtx, projmtx, augmentedImage, centerAnchor, colorCorrectionRgba);
@@ -418,9 +416,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
         augmentedImageDatabase.addImage(value, loadAugmentedImageBitmap(assetPath));
         Log.d("ファイル", "success");
       }
-
       //augmentedImageDatabase.addImage("models/droidkun.png", loadAugmentedImageBitmap("default.jpg"));
-
     }
 
     config.setAugmentedImageDatabase(augmentedImageDatabase);

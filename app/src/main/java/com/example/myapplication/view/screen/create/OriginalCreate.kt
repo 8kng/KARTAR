@@ -66,7 +66,7 @@ import com.example.myapplication.view.widget.button.ButtonContent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OriginalCreateScreen(navController: NavController, profileViewModel: ProfileViewModel = ProfileViewModel(LocalContext.current, navController), createViewModel: CreateViewModel = CreateViewModel()) {
+fun OriginalCreateScreen(navController: NavController, profileViewModel: ProfileViewModel = ProfileViewModel(LocalContext.current, navController), createViewModel: CreateViewModel) {
     Scaffold(
         topBar = { AppBar(navController, profileViewModel) }
     ) { innerPadding ->
