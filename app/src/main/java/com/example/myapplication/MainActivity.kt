@@ -131,7 +131,6 @@ class MainActivity: ComponentActivity() {
                 composable(Screen.RoomCreate.route) { RoomCreateScreen(
                     navController = navController,
                     profileViewModel = profileViewModel,
-                    roomListViewModel = roomListViewModel,
                     roomCreateViewModel = roomCreateViewModel
                 ) }
                 /*ルーム待機*/

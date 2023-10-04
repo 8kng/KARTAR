@@ -5,10 +5,13 @@ import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,11 +56,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.controller.RoomCreateViewModel
-import com.example.myapplication.controller.RoomListViewModel
 import com.example.myapplication.theme.ButtonBorder
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
+import com.example.myapplication.view.screen.EfudaButton
+import com.example.myapplication.view.screen.PlayKartaButton
 import com.example.myapplication.view.widget.AppBar
 import com.example.myapplication.view.widget.CircleYomifudaText
 import com.example.myapplication.view.widget.SimpleEditField
@@ -69,7 +73,6 @@ import java.io.File
 fun RoomCreateScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
-    roomListViewModel: RoomListViewModel,
     roomCreateViewModel: RoomCreateViewModel
 ) {
     Scaffold(
@@ -85,22 +88,78 @@ fun RoomCreateScreen(
                 modifier = Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                PublicOrPrivate(roomCreateViewModel = roomCreateViewModel)
-                RoomNameEditField(roomCreateViewModel = roomCreateViewModel)
-                Spacer(modifier = Modifier.height(20.dp))
+                TopComponent(roomCreateViewModel = roomCreateViewModel)
                 //RoomPasswordEditField(roomCreateViewModel = roomCreateViewModel)
-                Spacer(modifier = Modifier.height(30.dp))
-                PlayKartaText(roomCreateViewModel = roomCreateViewModel)
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(modifier = Modifier.height(180.dp)) {
-                    SelectAKarta(roomCreateViewModel = roomCreateViewModel)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    SelectionColum(roomCreateViewModel = roomCreateViewModel)
-                }
-                ChoiceComponent(roomCreateViewModel = roomCreateViewModel)
-                Spacer(modifier = Modifier.height(20.dp))
-                RoomCreateButton(roomCreateViewModel = roomCreateViewModel, navController)
+                KartaSelectComponent(roomCreateViewModel = roomCreateViewModel)
+                PlaySelectComponent(roomCreateViewModel = roomCreateViewModel)
+                BottomComponent(roomCreateViewModel = roomCreateViewModel, navController = navController)
             }
+        }
+    }
+}
+
+@Composable
+private fun TopComponent(roomCreateViewModel: RoomCreateViewModel) {
+    Box(
+        modifier = Modifier.fillMaxHeight(fraction = 0.18f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            PublicOrPrivate(roomCreateViewModel = roomCreateViewModel)
+            RoomNameEditField(roomCreateViewModel = roomCreateViewModel)
+        }
+    }
+}
+
+@Composable
+private fun KartaSelectComponent(roomCreateViewModel: RoomCreateViewModel) {
+    Box(
+        modifier = Modifier.fillMaxHeight(fraction = 0.6f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            PlayKartaText(roomCreateViewModel = roomCreateViewModel)
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.02f))
+            Row(modifier = Modifier.height(180.dp)) {
+                SelectAKarta(roomCreateViewModel = roomCreateViewModel)
+                Spacer(modifier = Modifier.width(10.dp))
+                SelectionColum(roomCreateViewModel = roomCreateViewModel)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlaySelectComponent(roomCreateViewModel: RoomCreateViewModel) {
+    Box(
+        modifier = Modifier.fillMaxHeight(fraction = 0.3f),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "プレイ回数", color = Color.Gray)
+            Spacer(modifier = Modifier.fillMaxWidth(fraction = 0.05f))
+            ChoiceComponent(roomCreateViewModel = roomCreateViewModel)
+        }
+    }
+}
+
+@Composable
+private fun BottomComponent(roomCreateViewModel: RoomCreateViewModel, navController: NavController) {
+    Box(
+        modifier = Modifier.fillMaxHeight(fraction = 0.7f),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            RoomCreateButton(roomCreateViewModel = roomCreateViewModel, navController)
         }
     }
 }
@@ -307,7 +366,6 @@ private fun RoomCreateScreenPreview() {
     RoomCreateScreen(
         navController = rememberNavController(),
         profileViewModel = ProfileViewModel(context = LocalContext.current, navController = rememberNavController()),
-        roomListViewModel = RoomListViewModel(context = LocalContext.current),
         roomCreateViewModel = RoomCreateViewModel(context = LocalContext.current)
     )
 }

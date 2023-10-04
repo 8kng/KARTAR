@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,13 +27,24 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.R
 import com.example.myapplication.controller.RoomCreateViewModel
+import com.example.myapplication.controller.singleton.ConstantsSingleton
+import com.example.myapplication.controller.singleton.FirebaseSingleton
+import com.example.myapplication.theme.ButtonBorder
 import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.view.widget.PlayerIcon
+import com.example.myapplication.view.widget.button.ButtonContent
 
 @Composable
 fun StandByRoomScreen(
@@ -54,6 +66,11 @@ fun StandByRoomScreen(
             WaitingNumberText(roomCreateViewModel = roomCreateViewModel)
             Spacer(modifier = Modifier.height(20.dp))
             PlayerColumn(roomCreateViewModel = roomCreateViewModel)
+            if (roomCreateViewModel.ownerUid.value == FirebaseSingleton.currentUid()) {
+                GameStartButton(roomCreateViewModel = roomCreateViewModel)
+            }
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.04f))
+            ExitRoomButton(navController = navController, roomCreateViewModel = roomCreateViewModel)
         }
     }
 }
@@ -61,10 +78,17 @@ fun StandByRoomScreen(
 @Composable
 fun WaitingNumberText(roomCreateViewModel: RoomCreateViewModel) {
     Column(horizontalAlignment = Alignment.CenterHorizontally,) {
+        Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.02f))
+        Text(
+            text = roomCreateViewModel.enterRoomName.value,
+            fontSize = 20.sp,
+            fontFamily = FontFamily(Font(R.font.kiwimaru_medium))
+        )
+        Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.02f))
         Text(
             text = "待機人数",
             color = Grey,
-            fontSize = 18.sp
+            fontSize = 16.sp
         )
         Text(text = "${roomCreateViewModel.standByPlayer.value}/4")
     }
@@ -90,8 +114,45 @@ fun PlayerColumn(roomCreateViewModel: RoomCreateViewModel) {
                         model = roomCreateViewModel.playerInformation.value[index].second
                     )
                     Text(text = roomCreateViewModel.playerInformation.value[index].first)
+                    Text(text = roomCreateViewModel.allPlayers.value[index].state)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ExitRoomButton(navController: NavController, roomCreateViewModel: RoomCreateViewModel) {
+    val text = if (roomCreateViewModel.ownerUid.value == FirebaseSingleton.currentUid()) {
+        "解散する"
+    } else "退室する"
+    ButtonContent(
+        modifier = ConstantsSingleton.widthButtonModifier,
+        onClick = { roomCreateViewModel.exitRoom(navController = navController) },
+        text = text,
+        border = 4,
+        fontSize = ConstantsSingleton.widthButtonText,
+        fontWeight = FontWeight.Normal,
+        borderColor = DarkRed
+    )
+}
+
+@Composable
+private fun GameStartButton(roomCreateViewModel: RoomCreateViewModel) {
+    val context = LocalContext.current
+    ButtonContent(
+        modifier = ConstantsSingleton.widthButtonModifier,
+        onClick = { roomCreateViewModel.gameStart(context) },
+        text = "ゲーム開始する",
+        border = 4,
+        fontSize = ConstantsSingleton.widthButtonText,
+        fontWeight = FontWeight.Normal,
+        borderColor = ButtonBorder
+    )
+}
+
+@Preview
+@Composable
+private fun StandByRoomPreview() {
+    StandByRoomScreen(navController = rememberNavController(), roomCreateViewModel = viewModel())
 }

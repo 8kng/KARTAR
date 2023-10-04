@@ -8,16 +8,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.example.myapplication.AugmentedImageActivity
+import com.example.myapplication.view.AugmentedActivity
 import com.example.myapplication.model.RoomData
 import com.example.myapplication.model.realTimeDatabase.RoomInfo
-import com.google.ar.core.AugmentedImageDatabase
-import com.google.ar.core.Session
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -72,7 +69,7 @@ class RoomListViewModel(context: Context) : ViewModel() {
                             RoomData(
                                 name = roomInfo.roomName,
                                 count = roomInfo.count,
-                                isStart = roomInfo.isStart,
+                                isStart = roomInfo.start,
                                 kind = roomInfo.kind,
                                 roomUid = roomSnapshot.key.toString()
                             )
@@ -109,7 +106,7 @@ class RoomListViewModel(context: Context) : ViewModel() {
                             val playerUpdateMap = HashMap<String, Any>()
                             playerUpdateMap[FirebaseAuth.getInstance().currentUser?.uid.toString()] = "enter"
                             createRoom.child("player").updateChildren(playerUpdateMap)
-                            roomCreateViewModel.enterRoomm.value = roomList.value[index].roomUid
+                            roomCreateViewModel.enterRoomUid.value = roomList.value[index].roomUid
                             roomCreateViewModel.roomInformation(navController, context = context)
                         }
                     }
@@ -141,7 +138,7 @@ class RoomListViewModel(context: Context) : ViewModel() {
             val keys = filePathList.map { it.first }.toTypedArray()
             val values = filePathList.map { it.second }.toTypedArray()
             //画面遷移
-            val intent = Intent(context, AugmentedImageActivity::class.java)
+            val intent = Intent(context, AugmentedActivity::class.java)
             intent.putExtra("KEYS", keys)
             intent.putExtra("VALUES", values)
             (context as Activity).startActivity(intent)

@@ -217,7 +217,7 @@ fun EfudaImageSelect(createViewModel: CreateViewModel, index: Int) {
 @Composable
 fun YomifudaTextField(createViewModel: CreateViewModel, index: Int) {
     TextField(
-        modifier = Modifier.height(50.dp),
+        modifier = Modifier.height(55.dp),
         value = createViewModel.kartaDataList.value[index].yomifuda,
         onValueChange = { newValue ->
             createViewModel.onChangeYomifuda(newValue, index)

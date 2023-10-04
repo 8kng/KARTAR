@@ -16,8 +16,6 @@
 
 package com.example.myapplication;
 
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -30,6 +28,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
@@ -41,6 +40,7 @@ import com.example.myapplication.ARcore.helpers.SnackbarHelper;
 import com.example.myapplication.ARcore.helpers.TrackingStateHelper;
 import com.example.myapplication.ARcore.rendering.AugmentedImageRenderer;
 import com.example.myapplication.ARcore.rendering.BackgroundRenderer;
+import com.example.myapplication.view.AugmentedActivity;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.AugmentedImage;
@@ -57,7 +57,6 @@ import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 import com.google.firebase.appcheck.interop.BuildConfig;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -65,7 +64,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -81,11 +79,13 @@ import javax.microedition.khronos.opengles.GL10;
  * Images</a>.
  */
 public class AugmentedImageActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
-  //新規変数
+  /*使うかるたのデータをまとめたリスト*/
   List<Pair<String, String>> pairList = new ArrayList<>();
+  /*入った部屋のUID*/
+  String roomUid = "";
 
   //ARcoreにもともとあった値
-  private static final String TAG = AugmentedImageActivity.class.getSimpleName();
+  private static final String TAG = AugmentedActivity.class.getSimpleName();
 
   // Rendering. The Renderers are created here, and initialized when the GL surface is created.
   private GLSurfaceView surfaceView;
@@ -135,16 +135,22 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
 
     installRequested = false;
 
-    //画面遷移元からもらう値
+    /*画面遷移元からもらう値*/
     String[] keys = getIntent().getStringArrayExtra("KEYS");
     String[] values = getIntent().getStringArrayExtra("VALUES");
-
+    roomUid = getIntent().getStringExtra("ROOMUID");
+    /*今回使うかるたデータをリスト化*/
     if (keys != null && values != null) {
       for (int i = 0; i < Math.min(keys.length, values.length); i++) {
         pairList.add(new Pair<>(keys[i], values[i]));
       }
     }
-    Log.d("リスト", pairList.toString());
+  }
+
+  @Override
+  protected void onStart() {
+
+    super.onStart();
   }
 
   @Override
@@ -231,45 +237,43 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
   @Override
   public void onPause() {
     super.onPause();
+    /*順番が重要!GLSurfaceViewは、セッションを問い合わせようとしないように最初に一時停止する。
+    　SessionがGLSurfaceViewの前に一時停止されると、GLSurfaceViewはsession.update()を呼び出すことがありSessionPausedExceptionが発生するかも。*/
     if (session != null) {
-      // Note that the order matters - GLSurfaceView is paused first so that it does not try
-      // to query the session. If Session is paused before GLSurfaceView, GLSurfaceView may
-      // still call session.update() and get a SessionPausedException.
       displayRotationHelper.onPause();
       surfaceView.onPause();
       session.pause();
     }
   }
 
+  /**権限を要求＆それを許可or拒否した後に呼び出される**/
   @Override
-  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] results) {
     super.onRequestPermissionsResult(requestCode, permissions, results);
+    /*カメラのpermission許可されていない場合*/
     if (!CameraPermissionHelper.hasCameraPermission(this)) {
-      Toast.makeText(
-                      this, "Camera permissions are needed to run this application", Toast.LENGTH_LONG)
-              .show();
+      Toast.makeText(this, "このアプリはカメラpermissionが必要です!", Toast.LENGTH_LONG).show();
+      /*カメラのpermission拒否を2度としないに設定した場合*/
       if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
-        // Permission denied with checking "Do not ask again".
         CameraPermissionHelper.launchPermissionSettings(this);
       }
       finish();
     }
   }
 
+  /**適切なスクリーンモードに変換する**/
   @Override
   public void onWindowFocusChanged(boolean hasFocus) {
     super.onWindowFocusChanged(hasFocus);
     FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus);
   }
 
+  /**GLSurfaceViewが始めて作成された時に呼び出される**/
   @Override
   public void onSurfaceCreated(GL10 gl, EGLConfig config) {
     GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-    // Prepare the rendering objects. This involves reading shaders, so may throw an IOException.
     try {
-      // テクスチャを作成し、ARCore セッションに渡して、update() 中に塗りつぶします。
-      //"models/droidkun.png"
+      // 背景のテクスチャを作成してARCore セッションに渡し、update() 中に塗りつぶします。
       backgroundRenderer.createOnGlThread(/*context=*/ this);
     } catch (IOException e) {
       Log.e(TAG, "Failed to read an asset file", e);
@@ -338,6 +342,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
     session.configure(config);
   }
 
+  /**ARの描画処理**/
   private void drawAugmentedImages(
           Frame frame,
           float[] projmtx,
@@ -345,8 +350,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
           float[] colorCorrectionRgba
   ) throws IOException {
     Collection<AugmentedImage> updatedAugmentedImages = frame.getUpdatedTrackables(AugmentedImage.class);
-
-    // Iterate to update augmentedImageMap, remove elements we cannot draw.
+    /*augmentedImageMapに新規作成&削除*/
     for (AugmentedImage augmentedImage : updatedAugmentedImages) {
       switch (augmentedImage.getTrackingState()) {
         case PAUSED:
@@ -357,10 +361,9 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
           }
           break;
         case TRACKING:
-          // Switch to UI Thread to update View using lambda.
+          /*UIの更新*/
           this.runOnUiThread(() -> fitToScanView.setVisibility(View.GONE));
-
-          // Create a new anchor for newly found images.
+          /*始めてアンカーを取得した時の新規作成処理*/
           if (!augmentedImageMap.containsKey(augmentedImage.getIndex())) {
             Anchor centerPoseAnchor = augmentedImage.createAnchor(augmentedImage.getCenterPose());
             augmentedImageMap.put(augmentedImage.getIndex(), Pair.create(augmentedImage, centerPoseAnchor));
@@ -377,52 +380,35 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
       }
     }
 
-    // Draw all images in augmentedImageMap
+    /*augmentedImageMapのimageを全部AR表示する*/
     for (Pair<AugmentedImage, Anchor> pair : augmentedImageMap.values()) {
+      /*first:AR表示する画像、second:アンカー画像*/
       AugmentedImage augmentedImage = pair.first;
-      Anchor centerAnchor = pair.second;  // Reuse the value directly from the pair
+      Anchor centerAnchor = pair.second;
       if (augmentedImage.getTrackingState() == TrackingState.TRACKING) {
         augmentedImageRenderer.draw(viewmtx, projmtx, augmentedImage, centerAnchor, colorCorrectionRgba);
       }
     }
   }
 
+  /**ゲームにつかうかるたのARDatabaseを作成**/
   private boolean setupAugmentedImageDatabase(Config config) {
-
-
     AugmentedImageDatabase augmentedImageDatabase;
-
     if (useSingleImage) {
-
-      ContextWrapper contextWrapper = new ContextWrapper(this);
-      File directory = contextWrapper.getDir("KARTA", Context.MODE_PRIVATE);
-      final File file = new File(directory, "imageName.png");
-
       augmentedImageDatabase = new AugmentedImageDatabase(session);
-
-      Log.d("url", file.getPath());
-      if (file.exists()) {
-        Log.d("ファイル", "存在します");
-        //augmentedImageDatabase.addImage(file.getPath(), loadAugmentedImageBitmap("gajyumaru.jpg"));
-      } else {
-        Log.d("ファイル", "存在しない");
-      }
-
       for (Pair<String, String> pair : pairList) {
         String key = pair.first;
         String value = pair.second;
         String assetPath = "efuda/" + key + ".png";
         Log.d("ファイル", "key:" + key + "\nvalue:" + value + "\n存在します");
         augmentedImageDatabase.addImage(value, loadAugmentedImageBitmap(assetPath));
-        Log.d("ファイル", "success");
       }
-      //augmentedImageDatabase.addImage("models/droidkun.png", loadAugmentedImageBitmap("default.jpg"));
     }
-
     config.setAugmentedImageDatabase(augmentedImageDatabase);
     return true;
   }
 
+  /**assetから指定したアンカー画像を取り出す**/
   private Bitmap loadAugmentedImageBitmap(String imageName) {
     try (InputStream is = getAssets().open(imageName)) {
       return BitmapFactory.decodeStream(is);
