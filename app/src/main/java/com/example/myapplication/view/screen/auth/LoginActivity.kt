@@ -1,17 +1,13 @@
 package com.example.myapplication.view.screen.auth
 
 import android.app.Activity
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -24,16 +20,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.controller.AuthViewModel
-import com.example.myapplication.theme.DarkGreen
-import com.example.myapplication.theme.Grey
+import com.example.myapplication.controller.ProfileViewModel
+import com.example.myapplication.controller.singleton.ConstantsSingleton
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.view.widget.button.ButtonContent
-import com.example.myapplication.view.widget.button.OnValidCheckButton
 import com.example.myapplication.view.widget.textField.EmailTextField
 import com.example.myapplication.view.widget.textField.PasswordTextField
 
@@ -48,33 +42,16 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(modifier = Modifier.height(80.dp))
-                Text(
-                    textAlign = TextAlign.Center,
-                    text = "登録した\nメールアドレス&パスワードを入力してください"
-                )
-                Spacer(modifier = Modifier.height(50.dp))
-                EmailTextField(authViewModel)
-                if (authViewModel.isEmailValid.value) {
-                    Text(
-                        text = "有効なメールアドレスを入力してください",
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
+                DescriptionTextComponent()
+                InputFieldComponent(authViewModel = authViewModel)
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    OnValidButton(navController = navController, authViewModel = authViewModel)
                 }
-                Spacer(modifier = Modifier.height(30.dp))
-                PasswordTextField(authViewModel)
-                if (authViewModel.isPasswordValid.value) {
-                    Text(
-                        text = "有効なパスワードを入力してください",
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-                }
-                Spacer(modifier = Modifier.height(230.dp))
-                OnValidButton(navController = navController, authViewModel = authViewModel)
             }
-            //サーバ処理中に表示するインディケーター
+            /*サーバ処理中に表示するインディケーター*/
             if (authViewModel.showProcessIndicator.value) {
                 Box(
                     modifier = Modifier
@@ -90,12 +67,58 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
 }
 
 @Composable
+private fun DescriptionTextComponent() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(fraction = 0.2f),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            textAlign = TextAlign.Center,
+            text = "登録した\nメールアドレス&パスワードを入力してください"
+        )
+    }
+}
+
+@Composable
+private fun InputFieldComponent(authViewModel: AuthViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(fraction = 0.7f),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.2f))
+            /*Email入力*/
+            EmailTextField(authViewModel)
+            if (authViewModel.isEmailValid.value) {
+                Text(
+                    text = "有効なメールアドレスを入力してください",
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.05f))
+            /*パスワード入力*/
+            PasswordTextField(authViewModel)
+            if (authViewModel.isPasswordValid.value) {
+                Text(
+                    text = "有効なパスワードを入力してください",
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun OnValidButton(navController: NavController, authViewModel: AuthViewModel) {
     val context = LocalContext.current
     ButtonContent(
-        modifier = Modifier
-            .height(50.dp)
-            .width(250.dp),
+        modifier = ConstantsSingleton.widthButtonModifier,
         onClick = {
             val onValid = authViewModel.onValidCheck()
             if (onValid) {
@@ -107,7 +130,7 @@ private fun OnValidButton(navController: NavController, authViewModel: AuthViewM
                   },
         text = "OK",
         border = 4,
-        fontSize = 18,
+        fontSize = ConstantsSingleton.widthButtonText,
         fontWeight = FontWeight.Normal
     )
 }
@@ -115,5 +138,5 @@ private fun OnValidButton(navController: NavController, authViewModel: AuthViewM
 @Preview
 @Composable
 fun LoginScreenView() {
-    LoginScreen(rememberNavController(), AuthViewModel())
+    LoginScreen(rememberNavController(), AuthViewModel(profileViewModel = ProfileViewModel(context = LocalContext.current, navController = rememberNavController())))
 }

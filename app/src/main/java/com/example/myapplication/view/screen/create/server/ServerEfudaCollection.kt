@@ -46,8 +46,8 @@ import com.example.myapplication.theme.ButtonContainer
 import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
-import com.example.myapplication.view.screen.create.EditField
 import com.example.myapplication.view.widget.AppBar
+import com.example.myapplication.view.widget.SimpleEditField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +81,7 @@ fun ServerEfudaCollectionScreen(
 
 @Composable
 fun ServerKartaSearchBox(kartaSearchViewModel: KartaSearchViewModel) {
-    EditField(
+    SimpleEditField(
         value = kartaSearchViewModel.searchKeyword.value,
         placeholder = kartaSearchViewModel.searchBoxPlaceholder.value,
         onClick = { newValue -> kartaSearchViewModel.onClickServerKartaSearchBox(newValue = newValue) },

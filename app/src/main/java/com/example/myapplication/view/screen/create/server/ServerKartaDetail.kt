@@ -52,6 +52,7 @@ import com.example.myapplication.view.widget.button.ButtonContent
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServerKartaDetail(
+    createViewModel: CreateViewModel,
     navController: NavController,
     profileViewModel: ProfileViewModel,
     kartaSearchViewModel: KartaSearchViewModel,
@@ -72,7 +73,7 @@ fun ServerKartaDetail(
             ) {
                 KartaInformationText(kartaSearchViewModel = kartaSearchViewModel, kartaUid = kartaUid)
                 Spacer(modifier = Modifier.height(30.dp))
-                ServerKartaDetailRow(kartaUid = kartaUid, kartaSearchViewModel = kartaSearchViewModel)
+                ServerKartaDetailRow(createViewModel = createViewModel, kartaUid = kartaUid, kartaSearchViewModel = kartaSearchViewModel)
                 Spacer(modifier = Modifier.height(60.dp))
                 DownloadServerKarta(kartaSearchViewModel = kartaSearchViewModel)
             }
@@ -124,7 +125,7 @@ fun KartaInformationText(kartaSearchViewModel: KartaSearchViewModel, kartaUid: S
 }
 
 @Composable
-fun ServerKartaDetailRow(kartaUid: String, kartaSearchViewModel: KartaSearchViewModel) {
+fun ServerKartaDetailRow(createViewModel: CreateViewModel, kartaUid: String, kartaSearchViewModel: KartaSearchViewModel) {
     kartaSearchViewModel.getYomifudaAndEfuda(kartaUid)
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -136,7 +137,7 @@ fun ServerKartaDetailRow(kartaUid: String, kartaSearchViewModel: KartaSearchView
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SettingText(text = "絵札")
-                ServerKartaImage(uri = kartaSearchViewModel.kartaDataList.value[index].efuda, index = index)
+                ServerKartaImage(createViewModel = createViewModel, uri = kartaSearchViewModel.kartaDataList.value[index].efuda, index = index)
                 Spacer(modifier = Modifier.height(20.dp))
                 SettingText(text = "読み札")
                 Text(
@@ -150,7 +151,7 @@ fun ServerKartaDetailRow(kartaUid: String, kartaSearchViewModel: KartaSearchView
 }
 
 @Composable
-private fun ServerKartaImage(createViewModel: CreateViewModel = CreateViewModel(), uri: String, index: Int) {
+private fun ServerKartaImage(createViewModel: CreateViewModel, uri: String, index: Int) {
     val painter = rememberAsyncImagePainter(model = uri)
     Box {
         Box(

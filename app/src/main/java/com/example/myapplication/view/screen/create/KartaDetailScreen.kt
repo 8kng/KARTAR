@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
@@ -167,7 +168,7 @@ fun KartaDetailRow(kartaUid: String, createViewModel: CreateViewModel) {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        items(44) { index ->
+        items(imageFiles?.size ?: 0) { index ->
             val image = imageFiles?.get(index)?.absoluteFile
             val yomifuda = sharedPref.getString(index.toString(), "").toString()
             Column(
@@ -300,8 +301,8 @@ private fun kartaDeleteDialog(
 private fun KartaDetailScreenView() {
     KartaDetailScreen(
         navController = rememberNavController(),
-        profileViewModel = ProfileViewModel(LocalContext.current),
+        profileViewModel = ProfileViewModel(LocalContext.current, rememberNavController()),
         kartaUid = "",
-        createViewModel = CreateViewModel()
+        createViewModel = viewModel()
     )
 }

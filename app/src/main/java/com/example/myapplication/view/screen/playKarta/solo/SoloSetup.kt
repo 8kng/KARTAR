@@ -196,7 +196,7 @@ fun SelectKartaImage(roomListViewModel: RoomListViewModel) {
 private fun SoloSetupPreview() {
     SoloSetupScreen(
         navController = rememberNavController(),
-        profileViewModel = ProfileViewModel(LocalContext.current),
-        roomListViewModel = RoomListViewModel()
+        profileViewModel = ProfileViewModel(LocalContext.current, navController = rememberNavController()),
+        roomListViewModel = RoomListViewModel(context = LocalContext.current)
     )
 }

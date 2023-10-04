@@ -17,13 +17,16 @@ package com.example.myapplication.ARcore.rendering;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.Pair;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.core.Pose;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /** Renders an augmented image. */
@@ -38,24 +41,31 @@ public class AugmentedImageRenderer {
     0x009688, 0x4CAF50, 0x8BC34A, 0xCDDC39, 0xFFEB3B, 0xFFC107, 0xFF9800,
   };
 
-  private final ObjectRenderer imageFrameUpperRight = new ObjectRenderer();
+  private final ObjectRenderer imageFrame1 = new ObjectRenderer();
+  private final ObjectRenderer imageFrame18 = new ObjectRenderer();
+
+  private Map<String, ObjectRenderer> imageFrameMap = new HashMap<>();
 
 
   public void createOnGlThread(Context context, String textureName) throws IOException {
+    if (isCreated(textureName)) {
+      return;
+    }
 
-    Log.d("texture", textureName);
-    imageFrameUpperRight.createOnGlThread(
+    ObjectRenderer imageFrame = new ObjectRenderer();
+
+    imageFrame.createOnGlThread(
             context,
             "models/andy_shadow2.obj",
             textureName
-
     );
-    imageFrameUpperRight.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
-    imageFrameUpperRight.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
+    imageFrame.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
+    imageFrame.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
+    imageFrameMap.put(textureName, imageFrame);
     createdImages.add(textureName);
   }
 
-  public boolean isCreated(String imageName) {
+  public synchronized boolean isCreated(String imageName) {
     return createdImages.contains(imageName);
   }
 
@@ -103,10 +113,16 @@ public class AugmentedImageRenderer {
 
     float scaleFactor = 1.0f;
 
+    ObjectRenderer imageFrame = imageFrameMap.get(augmentedImage.getName());
+    if (imageFrame == null) {
+      // error handling
+      return;
+    }
+
     //worldBoundaryPoses[0].toMatrix(modelMatrix, 0);
    anchorPose.compose(localBoundaryPose).toMatrix(modelMatrix, 0);
-    imageFrameUpperRight.updateModelMatrix(modelMatrix, scaleFactor);
-    imageFrameUpperRight.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
+   imageFrame.updateModelMatrix(modelMatrix, scaleFactor);
+   imageFrame.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
 
   }
 

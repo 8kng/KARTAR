@@ -61,11 +61,12 @@ import com.example.myapplication.theme.Grey2
 import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.theme.Yellow2
 import com.example.myapplication.view.widget.AppBar
+import com.example.myapplication.view.widget.SimpleEditField
 import com.example.myapplication.view.widget.button.ButtonContent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OriginalCreateScreen(navController: NavController, profileViewModel: ProfileViewModel = ProfileViewModel(LocalContext.current), createViewModel: CreateViewModel = CreateViewModel()) {
+fun OriginalCreateScreen(navController: NavController, profileViewModel: ProfileViewModel = ProfileViewModel(LocalContext.current, navController), createViewModel: CreateViewModel) {
     Scaffold(
         topBar = { AppBar(navController, profileViewModel) }
     ) { innerPadding ->
@@ -216,7 +217,7 @@ fun EfudaImageSelect(createViewModel: CreateViewModel, index: Int) {
 @Composable
 fun YomifudaTextField(createViewModel: CreateViewModel, index: Int) {
     TextField(
-        modifier = Modifier.height(50.dp),
+        modifier = Modifier.height(55.dp),
         value = createViewModel.kartaDataList.value[index].yomifuda,
         onValueChange = { newValue ->
             createViewModel.onChangeYomifuda(newValue, index)
@@ -266,7 +267,7 @@ fun InputTitleDialog(createViewModel: CreateViewModel, navController: NavControl
                 },
         text = {
                Column {
-                   EditField(
+                   SimpleEditField(
                        value = createViewModel.kartaTitle.value,
                        onClick = { newValue -> createViewModel.onChangeKartaTitle(newValue) },
                        isError = createViewModel.isKartaTitleValid.value,
@@ -274,7 +275,7 @@ fun InputTitleDialog(createViewModel: CreateViewModel, navController: NavControl
                        label = "かるたのタイトル"
                    )
                    Spacer(modifier = Modifier.height(10.dp))
-                   EditField(
+                   SimpleEditField(
                        value = createViewModel.kartaDescription.value,
                        onClick = { newValue -> createViewModel.onChangeKartaDescription(newValue) },
                        isError = createViewModel.isKartaDescriptionValid.value,
@@ -282,7 +283,7 @@ fun InputTitleDialog(createViewModel: CreateViewModel, navController: NavControl
                        label = "かるたの説明"
                    )
                    Spacer(modifier = Modifier.height(10.dp))
-                   EditField(
+                   SimpleEditField(
                        value = createViewModel.kartaGenre.value,
                        onClick = { newValue -> createViewModel.onChangeKartaGenre(newValue) },
                        isError = createViewModel.isKartaGenreValid.value,
@@ -313,49 +314,6 @@ fun InputTitleDialog(createViewModel: CreateViewModel, navController: NavControl
                 )
             }
         }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun EditField(
-    value: String,
-    onClick: (String) -> Unit,
-    placeholder: String = "",
-    isError: Boolean,
-    label: String = ""
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { newValue ->
-            onClick(newValue)
-        },
-        singleLine = true,
-        placeholder = {
-            Text(
-                text = placeholder,
-                fontSize = 12.sp,
-                color = Grey2
-            )
-        },
-        isError = isError,
-        label = {
-            Text(
-                text = label,
-                color = DarkGreen,
-                fontWeight = FontWeight.Bold,
-            )
-        },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            textColor = Grey,
-            focusedBorderColor = DarkGreen,
-            unfocusedBorderColor = LiteGreen,
-            containerColor = ButtonContainer.copy(alpha = 0.5f)
-        ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Done,
-        ),
     )
 }
 

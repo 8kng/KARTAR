@@ -1,22 +1,15 @@
-package com.example.myapplication.view.widget.textField
+package com.example.myapplication.view.widget
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.R
-import com.example.myapplication.controller.AuthViewModel
 import com.example.myapplication.theme.ButtonContainer
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.Grey
@@ -25,27 +18,31 @@ import com.example.myapplication.theme.LiteGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmailTextField(authViewModel: AuthViewModel) {
+fun SimpleEditField(
+    value: String,
+    onClick: (String) -> Unit,
+    placeholder: String = "",
+    isError: Boolean,
+    label: String = ""
+) {
     OutlinedTextField(
-        value = authViewModel.email.value,
+        value = value,
         onValueChange = { newValue ->
-            authViewModel.onEmailChange(newValue)
+            onClick(newValue)
         },
-        isError = authViewModel.isEmailValid.value,
         singleLine = true,
         placeholder = {
             Text(
-                text = "メールアドレスを入力してください",
+                text = placeholder,
                 fontSize = 12.sp,
                 color = Grey2
             )
         },
+        isError = isError,
         label = {
             Text(
-                modifier = Modifier.background(Color.Transparent),
-                text = "メールアドレス",
+                text = label,
                 color = DarkGreen,
-                fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
                 fontWeight = FontWeight.Bold,
             )
         },
@@ -56,7 +53,7 @@ fun EmailTextField(authViewModel: AuthViewModel) {
             containerColor = ButtonContainer.copy(alpha = 0.5f)
         ),
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Email,
+            keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Done,
         ),
     )

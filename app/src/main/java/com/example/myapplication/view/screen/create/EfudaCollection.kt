@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,17 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,8 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -49,11 +42,9 @@ import com.example.myapplication.controller.CreateViewModel
 import com.example.myapplication.controller.ProfileViewModel
 import com.example.myapplication.theme.ButtonBorder
 import com.example.myapplication.theme.ButtonContainer
-import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.theme.DarkRed
 import com.example.myapplication.theme.Grey
 import com.example.myapplication.theme.Grey2
-import com.example.myapplication.theme.LiteGreen
 import com.example.myapplication.view.widget.AppBar
 import com.example.myapplication.view.widget.button.ButtonContent
 import java.io.File
@@ -78,34 +69,29 @@ fun EfudaCollectionScreen(
                 modifier = Modifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                RowButtons(navController)
-                Spacer(modifier = Modifier.height(30.dp))
-                /*
-                TODO:現状必要ないので時間があったらやるかな～
-                SearchBox(createViewModel = createViewModel)
-                Spacer(modifier = Modifier.height(20.dp))
-                */
-                Text(
-                    text = "かるた一覧",
-                    fontSize = 16.sp
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                KartaDirectoryList(navController, createViewModel = createViewModel)
+                RowButtonsComponent(navController)
+                LocalKartaListComponent(navController = navController, createViewModel = createViewModel)
             }
         }
     }
 }
 
 @Composable
-private fun RowButtons(navController: NavController) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ){
-        Spacer(modifier = Modifier.height(20.dp))
-        CreateButton(navController = navController)
-        Spacer(modifier = Modifier.width(30.dp))
-        SaverSearchButton(navController)
+private fun RowButtonsComponent(navController: NavController) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(fraction = 0.15f),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ){
+            CreateButton(navController = navController)
+            Spacer(modifier = Modifier.fillMaxWidth(fraction = 0.1f))
+            SaverSearchButton(navController)
+        }
     }
 }
 
@@ -135,54 +121,28 @@ private fun SaverSearchButton(navController: NavController) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBox(createViewModel: CreateViewModel) {
-    OutlinedTextField(
-        modifier = Modifier
-            .height(56.dp)
-            .width(320.dp),
-        value = createViewModel.searchBoxText.value,
-        onValueChange = { newValue ->
-            createViewModel.onSearchBoxChange(newValue)
-        },
-        singleLine = true,
-        isError = createViewModel.isSearchBoxTextValid.value,
-        label = {
+private fun LocalKartaListComponent(navController: NavController, createViewModel: CreateViewModel) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.05f))
             Text(
-                text = "検索",
-                color = DarkGreen,
-                fontFamily = FontFamily(Font(R.font.kiwimaru_medium)),
-                fontWeight = FontWeight.Bold,
+                text = "かるた一覧",
+                fontSize = 16.sp
             )
-        },
-        placeholder = {
-            Text(
-                text = "1～20文字で入力してください",
-                fontSize = 12.sp,
-                color = Grey2
-            )
-        },
-        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            textColor = Grey,
-            focusedBorderColor = DarkGreen,
-            unfocusedBorderColor = LiteGreen,
-            containerColor = ButtonContainer
-        ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Done,
-        ),
-    )
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.05f))
+            KartaDirectoryList(navController, createViewModel = createViewModel)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KartaDirectoryList(navController: NavController, createViewModel: CreateViewModel) {
     val context = LocalContext.current
-    createViewModel.getKartaDirectories(context)
-    
     LazyColumn {
         items(createViewModel.kartaDirectories.value.size) { index ->
             val sharedPref = context.getSharedPreferences(createViewModel.kartaDirectories.value[index].name, Context.MODE_PRIVATE)
@@ -204,7 +164,7 @@ fun KartaDirectoryList(navController: NavController, createViewModel: CreateView
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        kartaImage(createViewModel, index)
+                        FirstKartaImage(createViewModel, index)
                         Column(modifier = Modifier.padding(start = 10.dp)) {
                             Text(
                                 text = kartaName.toString(),
@@ -232,44 +192,46 @@ fun KartaDirectoryList(navController: NavController, createViewModel: CreateView
 }
 
 @Composable
-private fun kartaImage(createViewModel: CreateViewModel, index: Int) {
+private fun FirstKartaImage(createViewModel: CreateViewModel, index: Int) {
     val context = LocalContext.current
     val imageFile = File(context.filesDir, "karta/${createViewModel.kartaDirectories.value[index].name}/0.png")
     val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-    Box {
-        Box(
-            modifier = Modifier
-                .border(
-                    width = 4.dp,
-                    color = ButtonBorder,
-                    shape = RoundedCornerShape(5.dp)
-                )
-                .background(color = ButtonContainer.copy(alpha = 0.4f))
-        ) {
-            Image(
+    if (bitmap != null) {
+        Box {
+            Box(
                 modifier = Modifier
-                    .height(98.dp)
-                    .width(70.dp),
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = null
-            )
-        }
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 3.dp, end = 3.dp)
-                .size(30.dp)
-                .background(Color.White, shape = CircleShape)
-                .border(width = 3.dp, color = Grey, shape = CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "あ",
-                fontSize = 14.sp,
-                color = Grey,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily(Font(R.font.kiwimaru_regular))
-            )
+                    .border(
+                        width = 4.dp,
+                        color = ButtonBorder,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                    .background(color = ButtonContainer.copy(alpha = 0.4f))
+            ) {
+                Image(
+                    modifier = Modifier
+                        .height(98.dp)
+                        .width(70.dp),
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = null
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 3.dp, end = 3.dp)
+                    .size(30.dp)
+                    .background(Color.White, shape = CircleShape)
+                    .border(width = 3.dp, color = Grey, shape = CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "あ",
+                    fontSize = 14.sp,
+                    color = Grey,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily(Font(R.font.kiwimaru_regular))
+                )
+            }
         }
     }
 }

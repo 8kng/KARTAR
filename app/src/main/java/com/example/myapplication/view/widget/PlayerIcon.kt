@@ -16,29 +16,21 @@ import com.example.myapplication.theme.Grey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CircleUserIcon(
+fun PlayerIcon(
     modifier: Modifier,
-    profileViewModel: ProfileViewModel,
     borderWidth: Int,
-    navController: NavController,
+    model: String
 ) {
-    Surface(
-        shape = CircleShape,
-        onClick = {
-            navController.navigate("userProfile")
-        }
-    ) {
-        AsyncImage(
-            model = profileViewModel.iconImageUri.value.toString(),
-            contentScale = ContentScale.Crop,
-            contentDescription = null,
-            modifier = modifier
-                .border(
-                    width = borderWidth.dp,
-                    color = Grey,
-                    shape = CircleShape
-                )
-                .clip(CircleShape)
-        )
-    }
+    AsyncImage(
+        model = model,
+        contentScale = ContentScale.Crop,
+        contentDescription = null,
+        modifier = modifier
+            .border(
+                width = borderWidth.dp,
+                color = Grey,
+                shape = CircleShape
+            )
+            .clip(CircleShape)
+    )
 }

@@ -1,9 +1,11 @@
 package com.example.myapplication.view.screen.auth
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+import com.example.myapplication.controller.singleton.ConstantsSingleton
 import com.example.myapplication.theme.DarkGreen
 import com.example.myapplication.view.widget.button.ButtonContent
 
@@ -32,19 +35,30 @@ fun NotLoggedInScreen(navController: NavController) {
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally,) {
-            Spacer(modifier = Modifier.height(150.dp))
-            Image(
-                painter = painterResource(id = R.drawable.kartar_logo),
-                contentDescription = "KARTARのロゴ",
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
                 modifier = Modifier
-                    .width(320.dp)
-                    .height(200.dp)
-            )
-            Spacer(modifier = Modifier.height(100.dp))
-            SignInButton(navController)
-            Spacer(modifier = Modifier.height(10.dp))
-            LogInTextButton(navController = navController)
+                    .fillMaxHeight(fraction = 0.6f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.kartar_logo),
+                    contentDescription = "KARTARのロゴ",
+                    modifier = Modifier
+                        .width(320.dp)
+                        .height(200.dp)
+                )
+            }
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    SignInButton(navController)
+                    LogInTextButton(navController = navController)
+                }
+            }
         }
     }
 }
@@ -52,11 +66,11 @@ fun NotLoggedInScreen(navController: NavController) {
 @Composable
 fun SignInButton(navController: NavController) {
     ButtonContent(
-        modifier = Modifier.height(46.dp).width(260.dp),
+        modifier = ConstantsSingleton.widthButtonModifier,
         border = 4,
         onClick = { navController.navigate("signin") },
         text = "サインイン",
-        fontSize = 18,
+        fontSize = ConstantsSingleton.widthButtonText,
         fontWeight = FontWeight.Normal
     )
 }

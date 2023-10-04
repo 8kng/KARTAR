@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -14,6 +15,7 @@ import com.example.myapplication.model.KARTAData
 import com.example.myapplication.model.KartaDataFromServer
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -99,152 +101,156 @@ class KartaSearchViewModel : ViewModel(){
 
     //サーバからかるた情報を取得
     private fun getKartaDataFromServer() {
-        viewModelScope.launch {
-            val newKartaDataList = mutableListOf<KartaDataFromServer>()
-            val firestore = FirebaseFirestore.getInstance()
+        if (FirebaseAuth.getInstance().currentUser?.uid != null) {
+            viewModelScope.launch {
+                val newKartaDataList = mutableListOf<KartaDataFromServer>()
+                val firestore = FirebaseFirestore.getInstance()
 
-            when (searchType.value) {
-                "normal" -> {
-                    val querySnapshot = firestore.collection("kartaes").get().await()
+                when (searchType.value) {
+                    "normal" -> {
+                        val querySnapshot = firestore.collection("kartaes").get().await()
 
-                    for (document in querySnapshot.documents) {
-                        val title = document.getString("title") ?: ""
-                        val description = document.getString("description") ?: ""
-                        val genre = document.getString("genre") ?: ""
+                        for (document in querySnapshot.documents) {
+                            val title = document.getString("title") ?: ""
+                            val description = document.getString("description") ?: ""
+                            val genre = document.getString("genre") ?: ""
 
-                        if (title.contains(searchKeyword.value) || description.contains(searchKeyword.value) || genre.contains(searchKeyword.value)) {
-                            val efuda = firestore.collection("kartaes")
-                                .document(document.id)
-                                .collection("efuda")
-                                .document("0")
-                                .get()
-                                .await()
+                            if (title.contains(searchKeyword.value) || description.contains(searchKeyword.value) || genre.contains(searchKeyword.value)) {
+                                val efuda = firestore.collection("kartaes")
+                                    .document(document.id)
+                                    .collection("efuda")
+                                    .document("0")
+                                    .get()
+                                    .await()
 
-                            newKartaDataList.add(KartaDataFromServer(
-                                kartaUid = document.id,
-                                create = document.get("create").toString(),
-                                title = title,
-                                description = description,
-                                genre = genre,
-                                kartaImage = efuda.get("efuda").toString()
-                            ))
+                                newKartaDataList.add(KartaDataFromServer(
+                                    kartaUid = document.id,
+                                    create = document.get("create").toString(),
+                                    title = title,
+                                    description = description,
+                                    genre = genre,
+                                    kartaImage = efuda.get("efuda").toString()
+                                ))
+                            }
                         }
+
+                        kartaDataFromServerList.value = newKartaDataList
                     }
+                    "title" -> {  //タイトル検索時
+                        val querySnapshot = firestore.collection("kartaes").get().await()
 
-                    kartaDataFromServerList.value = newKartaDataList
-                }
-                "title" -> {  //タイトル検索時
-                    val querySnapshot = firestore.collection("kartaes").get().await()
+                        for (document in querySnapshot.documents) {
+                            val title = document.getString("title") ?: ""
 
-                    for (document in querySnapshot.documents) {
-                        val title = document.getString("title") ?: ""
+                            if (title.contains(searchKeyword.value)) {
+                                val efuda = firestore.collection("kartaes")
+                                    .document(document.id)
+                                    .collection("efuda")
+                                    .document("0")
+                                    .get()
+                                    .await()
 
-                        if (title.contains(searchKeyword.value)) {
-                            val efuda = firestore.collection("kartaes")
-                                .document(document.id)
-                                .collection("efuda")
-                                .document("0")
-                                .get()
-                                .await()
-
-                            newKartaDataList.add(KartaDataFromServer(
-                                kartaUid = document.id,
-                                create = document.get("create").toString(),
-                                title = title,
-                                description = document.get("description").toString(),
-                                genre = document.get("genre").toString(),
-                                kartaImage = efuda.get("efuda").toString()
-                            ))
+                                newKartaDataList.add(KartaDataFromServer(
+                                    kartaUid = document.id,
+                                    create = document.get("create").toString(),
+                                    title = title,
+                                    description = document.get("description").toString(),
+                                    genre = document.get("genre").toString(),
+                                    kartaImage = efuda.get("efuda").toString()
+                                ))
+                            }
                         }
+
+                        kartaDataFromServerList.value = newKartaDataList
                     }
+                    "description" -> {
+                        val querySnapshot = firestore.collection("kartaes").get().await()
 
-                    kartaDataFromServerList.value = newKartaDataList
-                }
-                "description" -> {
-                    val querySnapshot = firestore.collection("kartaes").get().await()
+                        for (document in querySnapshot.documents) {
+                            val description = document.getString("description") ?: ""
 
-                    for (document in querySnapshot.documents) {
-                        val description = document.getString("description") ?: ""
+                            if (description.contains(searchKeyword.value)) {
+                                val efuda = firestore.collection("kartaes")
+                                    .document(document.id)
+                                    .collection("efuda")
+                                    .document("0")
+                                    .get()
+                                    .await()
 
-                        if (description.contains(searchKeyword.value)) {
-                            val efuda = firestore.collection("kartaes")
-                                .document(document.id)
-                                .collection("efuda")
-                                .document("0")
-                                .get()
-                                .await()
-
-                            newKartaDataList.add(KartaDataFromServer(
-                                kartaUid = document.id,
-                                create = document.get("create").toString(),
-                                title = document.get("title").toString(),
-                                description = description,
-                                genre = document.get("genre").toString(),
-                                kartaImage = efuda.get("efuda").toString()
-                            ))
+                                newKartaDataList.add(KartaDataFromServer(
+                                    kartaUid = document.id,
+                                    create = document.get("create").toString(),
+                                    title = document.get("title").toString(),
+                                    description = description,
+                                    genre = document.get("genre").toString(),
+                                    kartaImage = efuda.get("efuda").toString()
+                                ))
+                            }
                         }
+
+                        kartaDataFromServerList.value = newKartaDataList
                     }
+                    else -> {
+                        val querySnapshot = firestore.collection("kartaes").get().await()
 
-                    kartaDataFromServerList.value = newKartaDataList
-                }
-                else -> {
-                    val querySnapshot = firestore.collection("kartaes").get().await()
+                        for (document in querySnapshot.documents) {
+                            val genre = document.getString("genre") ?: ""
 
-                    for (document in querySnapshot.documents) {
-                        val genre = document.getString("genre") ?: ""
+                            if (genre.contains(searchKeyword.value)) {
+                                val efuda = firestore.collection("kartaes")
+                                    .document(document.id)
+                                    .collection("efuda")
+                                    .document("0")
+                                    .get()
+                                    .await()
 
-                        if (genre.contains(searchKeyword.value)) {
-                            val efuda = firestore.collection("kartaes")
-                                .document(document.id)
-                                .collection("efuda")
-                                .document("0")
-                                .get()
-                                .await()
-
-                            newKartaDataList.add(KartaDataFromServer(
-                                kartaUid = document.id,
-                                create = document.get("create").toString(),
-                                title = document.get("title").toString(),
-                                description = document.get("description").toString(),
-                                genre = genre,
-                                kartaImage = efuda.get("efuda").toString()
-                            ))
+                                newKartaDataList.add(KartaDataFromServer(
+                                    kartaUid = document.id,
+                                    create = document.get("create").toString(),
+                                    title = document.get("title").toString(),
+                                    description = document.get("description").toString(),
+                                    genre = genre,
+                                    kartaImage = efuda.get("efuda").toString()
+                                ))
+                            }
                         }
-                    }
 
-                    kartaDataFromServerList.value = newKartaDataList
+                        kartaDataFromServerList.value = newKartaDataList
+                    }
                 }
             }
         }
     }
 
     private fun getAllKartaDataFromServer() {
-        val newKartaDataList = mutableListOf<KartaDataFromServer>()
-        val firestore = FirebaseFirestore.getInstance()
+        if (FirebaseAuth.getInstance().currentUser?.uid != null) {
+            val newKartaDataList = mutableListOf<KartaDataFromServer>()
+            val firestore = FirebaseFirestore.getInstance()
 
-        viewModelScope.launch {
-            val querySnapshot = firestore.collection("kartaes").get().await()
+            viewModelScope.launch {
+                val querySnapshot = firestore.collection("kartaes").get().await()
 
-            for (document in querySnapshot.documents) {
-                val efuda = firestore.collection("kartaes")
-                    .document(document.id)
-                    .collection("efuda")
-                    .document("0")
-                    .get()
-                    .await()
+                for (document in querySnapshot.documents) {
+                    val efuda = firestore.collection("kartaes")
+                        .document(document.id)
+                        .collection("efuda")
+                        .document("0")
+                        .get()
+                        .await()
 
-                newKartaDataList.add(KartaDataFromServer(
-                    kartaUid = document.id,
-                    create = document.get("create").toString(),
-                    title = document.get("title").toString(),
-                    description = document.get("description").toString(),
-                    genre = document.get("genre").toString(),
-                    kartaImage = efuda.get("efuda").toString()
-                ))
+                    newKartaDataList.add(KartaDataFromServer(
+                        kartaUid = document.id,
+                        create = document.get("create").toString(),
+                        title = document.get("title").toString(),
+                        description = document.get("description").toString(),
+                        genre = document.get("genre").toString(),
+                        kartaImage = efuda.get("efuda").toString()
+                    ))
+                }
+
+                kartaDataFromServerList.value = newKartaDataList
+                Log.d("newValue", kartaDataFromServerList.value.toString())
             }
-
-            kartaDataFromServerList.value = newKartaDataList
-            Log.d("newValue", kartaDataFromServerList.value.toString())
         }
     }
 
@@ -263,34 +269,43 @@ class KartaSearchViewModel : ViewModel(){
     //選択したかるたの情報取得
     fun getKartaInformation(kartaUid: String) {
         viewModelScope.launch {
-            FirebaseFirestore.getInstance().collection("kartaes").document(kartaUid).get()
-                .addOnSuccessListener { data ->
-                    kartaTitle.value = data.get("title").toString()
-                    kartaGenre.value = data.get("genre").toString()
-                    kartaDescription.value = data.get("description").toString()
-                }
+            if (FirebaseAuth.getInstance().currentUser?.uid != null) {
+                FirebaseFirestore.getInstance().collection("kartaes").document(kartaUid).get()
+                    .addOnSuccessListener { data ->
+                        kartaTitle.value = data.get("title").toString()
+                        kartaGenre.value = data.get("genre").toString()
+                        kartaDescription.value = data.get("description").toString()
+                    }
+            }
         }
+    }
+
+    val operationComplete: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>()
     }
 
     //選択したかるたの読み札・絵札取得
     fun getYomifudaAndEfuda(kartaUid: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        val currentList = mutableListOf<KARTAData>()
-        viewModelScope.launch {
+        if (FirebaseAuth.getInstance().currentUser?.uid != null){
+            val firestore = FirebaseFirestore.getInstance()
+            val currentList = mutableListOf<KARTAData>()
+            viewModelScope.launch {
 
-            for (index in 0 until 44) {
-                val efudaTask = firestore.collection("kartaes").document(kartaUid)
-                    .collection("efuda").document(index.toString()).get().await()
+                for (index in 0 until 44) {
+                    val efudaTask = firestore.collection("kartaes").document(kartaUid)
+                        .collection("efuda").document(index.toString()).get().await()
 
-                val yomifudaTask = firestore.collection("kartaes").document(kartaUid)
-                    .collection("yomifuda").document(index.toString()).get().await()
+                    val yomifudaTask = firestore.collection("kartaes").document(kartaUid)
+                        .collection("yomifuda").document(index.toString()).get().await()
 
-                currentList.add(KARTAData(
-                    efuda = efudaTask.get("efuda").toString(),
-                    yomifuda = yomifudaTask.get("yomifuda").toString()
-                ))
+                    currentList.add(KARTAData(
+                        efuda = efudaTask.get("efuda").toString(),
+                        yomifuda = yomifudaTask.get("yomifuda").toString()
+                    ))
+                }
+                operationComplete.value = true
+                kartaDataList.value = currentList
             }
-            kartaDataList.value = currentList
         }
     }
 
